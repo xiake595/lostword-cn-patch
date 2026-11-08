@@ -1,0 +1,569 @@
+[
+ {
+  "table": "AbilityMaster",
+  "file": "902f9aa853b68bfeee4fa42dfd75a8a2",
+  "applied": 2106,
+  "missing": 0,
+  "size": 1170464
+ },
+ {
+  "table": "AbilitySealEffectMaster",
+  "file": "6088572d88108036ff1627b037d7bc6a",
+  "applied": 372,
+  "missing": 0,
+  "size": 27392
+ },
+ {
+  "table": "AbilitySealMaster",
+  "file": "e7bce82e74793407616e8ce9d6ba511a",
+  "applied": 150,
+  "missing": 0,
+  "size": 11040
+ },
+ {
+  "table": "AchievementMaster",
+  "file": "8c58de1062c77c3c7b6df51f46392042",
+  "applied": 912,
+  "missing": 0,
+  "size": 53120
+ },
+ {
+  "table": "AfkGrowthMaster",
+  "file": "1251c9e74e6c3ce965363d7b858e7cd4",
+  "applied": 55,
+  "missing": 0,
+  "size": 2912
+ },
+ {
+  "table": "ArenaEnemyMaster",
+  "file": "5f1615365d560adfa1820d62ec074542",
+  "applied": 792,
+  "missing": 0,
+  "size": 113456
+ },
+ {
+  "table": "BattlePassMaster",
+  "file": "2203281492b96471a31060757e038831",
+  "applied": 20,
+  "missing": 0,
+  "size": 2256
+ },
+ {
+  "table": "BattlePassMissionMaster",
+  "file": "19932e1fedb57097193b60498d72b158",
+  "applied": 248,
+  "missing": 0,
+  "size": 22224
+ },
+ {
+  "table": "BattlePassProductMaster",
+  "file": "d48fdca66f807e8e44a6bc561d67a822",
+  "applied": 6,
+  "missing": 0,
+  "size": 1680
+ },
+ {
+  "table": "BgmMaster",
+  "file": "cdf64c9528c028d67cb3025f37b7fd44",
+  "applied": 3036,
+  "missing": 0,
+  "size": 225872
+ },
+ {
+  "table": "BulletAddonMaster",
+  "file": "f3a203210d818c4022a214f7acbc3205",
+  "applied": 31,
+  "missing": 0,
+  "size": 848
+ },
+ {
+  "table": "BulletExtraEffectMaster",
+  "file": "e8eb988b99fa79fc13d238dd4589b842",
+  "applied": 1112,
+  "missing": 0,
+  "size": 36048
+ },
+ {
+  "table": "BulletMaster",
+  "file": "f373f4e48df131a7c7676c79122cf8bf",
+  "applied": 24764,
+  "missing": 0,
+  "size": 6742208
+ },
+ {
+  "table": "ChangeCharacteristicExtensionMaster",
+  "file": "95aaff80fe0c511a0f9d1ad5982d8a53",
+  "applied": 6,
+  "missing": 0,
+  "size": 3104
+ },
+ {
+  "table": "ChapterMaster",
+  "file": "68b742d7e778f8bc3cd8b16aaaa085b0",
+  "applied": 196,
+  "missing": 0,
+  "size": 21328
+ },
+ {
+  "table": "CharacterEpisodeMaster",
+  "file": "91dce05f0232193964d95b731f7ca765",
+  "applied": 254,
+  "missing": 0,
+  "size": 10704
+ },
+ {
+  "table": "CharacterQuestChapterMaster",
+  "file": "c83326bb65325c26468b27c696bb741f",
+  "applied": 206,
+  "missing": 0,
+  "size": 9376
+ },
+ {
+  "table": "CharacterQuestMaster",
+  "file": "4d8cf4ef320b0261b1c2e702ca0c2a29",
+  "applied": 206,
+  "missing": 0,
+  "size": 15856
+ },
+ {
+  "table": "CharacteristicMaster",
+  "file": "7bcad78910c0681dcf29320fcb12eabf",
+  "applied": 3528,
+  "missing": 0,
+  "size": 367376
+ },
+ {
+  "table": "CommonStringMaster",
+  "file": "bab1aa87e3f50175dd6e076499373344",
+  "applied": 732,
+  "missing": 0,
+  "size": 225056
+ },
+ {
+  "table": "CostumeMaster",
+  "file": "588435adf0a170217bae172bf473e8c9",
+  "applied": 1716,
+  "missing": 0,
+  "size": 156144
+ },
+ {
+  "table": "CostumeShopSubCategoryMaster",
+  "file": "122128a11474bf37c7d776be4d192d66",
+  "applied": 7,
+  "missing": 0,
+  "size": 624
+ },
+ {
+  "table": "DailyQuestMaster",
+  "file": "266ece11033ebd73a275ab7a8d4a0663",
+  "applied": 25,
+  "missing": 0,
+  "size": 4304
+ },
+ {
+  "table": "DailyQuestStageMaster",
+  "file": "7010a0a2674fb222a58d5efb6783c292",
+  "applied": 39,
+  "missing": 0,
+  "size": 2832
+ },
+ {
+  "table": "DeliveryMaster",
+  "file": "a6f77045770bc2d0bcf57154aa9247ed",
+  "applied": 1,
+  "missing": 0,
+  "size": 96
+ },
+ {
+  "table": "DeliveryRewardMaster",
+  "file": "5986273408d5f0957eb2458bbb026d39",
+  "applied": 8,
+  "missing": 0,
+  "size": 224
+ },
+ {
+  "table": "DispatchGroupMaster",
+  "file": "f3c7cbd2eab51c518cfcfcf9a0ff751b",
+  "applied": 5,
+  "missing": 0,
+  "size": 176
+ },
+ {
+  "table": "DispatchMaster",
+  "file": "cb9571b0ee59276c5f3ed44fc300729a",
+  "applied": 192,
+  "missing": 0,
+  "size": 17216
+ },
+ {
+  "table": "DispatchMemoMaster",
+  "file": "dc69d1b2b0a72d2655bb892614f2764f",
+  "applied": 280,
+  "missing": 0,
+  "size": 10528
+ },
+ {
+  "table": "EnemyMaster",
+  "file": "711e2ff5cc50394ad0c84b04985eba7d",
+  "applied": 23690,
+  "missing": 0,
+  "size": 3437072
+ },
+ {
+  "table": "EpisodeMaster",
+  "file": "51c5716c437c40b4681253fd26a8ea81",
+  "applied": 6430,
+  "missing": 0,
+  "size": 560720
+ },
+ {
+  "table": "EventMaster",
+  "file": "e9f5ce768c4b20c46039c18ef9fa40ec",
+  "applied": 834,
+  "missing": 0,
+  "size": 431744
+ },
+ {
+  "table": "EventMenuMaster",
+  "file": "ee3d623981e3e03d79d1b5ee36eaec05",
+  "applied": 457,
+  "missing": 0,
+  "size": 41680
+ },
+ {
+  "table": "FeatureProductShopMaster",
+  "file": "2075fff9609572132f5607c3bdde0277",
+  "applied": 93,
+  "missing": 0,
+  "size": 173136
+ },
+ {
+  "table": "ItemMaster",
+  "file": "aec79aecc236066b995de3f4234994b6",
+  "applied": 960,
+  "missing": 0,
+  "size": 57376
+ },
+ {
+  "table": "MiniGameMaster",
+  "file": "42e2d3b0d26420a620879750c711dbf8",
+  "applied": 1,
+  "missing": 0,
+  "size": 176
+ },
+ {
+  "table": "MissionMaster",
+  "file": "eafcfa27c264287176ad6e85b9e1bc75",
+  "applied": 23720,
+  "missing": 0,
+  "size": 5622032
+ },
+ {
+  "table": "MultipleSpiritsWeeklyEnemyMaster",
+  "file": "38500a37214cb45311db0ea257f2e52a",
+  "applied": 708,
+  "missing": 0,
+  "size": 123280
+ },
+ {
+  "table": "MultipleSpiritsWeeklyMaster",
+  "file": "c45c1824912ff61d7f7b5188ec78264e",
+  "applied": 87,
+  "missing": 0,
+  "size": 19312
+ },
+ {
+  "table": "ObjectMaster",
+  "file": "0a64c0941df6b58120d0ade6c532376a",
+  "applied": 36,
+  "missing": 0,
+  "size": 1744
+ },
+ {
+  "table": "PayShopMaster",
+  "file": "c233ef1d98037e438f8f24a318506a67",
+  "applied": 12,
+  "missing": 0,
+  "size": 1504
+ },
+ {
+  "table": "PerkMaster",
+  "file": "1bdec828a74cdded0f365cd25b4a346a",
+  "applied": 2,
+  "missing": 0,
+  "size": 480
+ },
+ {
+  "table": "PersonMaster",
+  "file": "6f86f31900b9d6af9766f6e836ef64ce",
+  "applied": 74,
+  "missing": 0,
+  "size": 13888
+ },
+ {
+  "table": "PictureCharacteristicGroupMaster",
+  "file": "5a00446477e140edc94b8f75963c1822",
+  "applied": 216,
+  "missing": 0,
+  "size": 54128
+ },
+ {
+  "table": "PictureMaster",
+  "file": "c04349322003664e4ed1d16a5ec17989",
+  "applied": 5220,
+  "missing": 0,
+  "size": 1879008
+ },
+ {
+  "table": "PointAllocationMaster",
+  "file": "7553d76c16e3babc968786b95e2a10cf",
+  "applied": 268,
+  "missing": 0,
+  "size": 7856
+ },
+ {
+  "table": "RaceMaster",
+  "file": "2a6550dc00714c9159b6e31fa9f8bb39",
+  "applied": 538,
+  "missing": 0,
+  "size": 18032
+ },
+ {
+  "table": "RaidGaugeMaster",
+  "file": "91cd32aefcadf9f5bdc34fe51eef1411",
+  "applied": 3,
+  "missing": 0,
+  "size": 304
+ },
+ {
+  "table": "ReleaseCharacteristicMaster",
+  "file": "83f7da59e1e4c656359ca1187f494f05",
+  "applied": 300,
+  "missing": 0,
+  "size": 25392
+ },
+ {
+  "table": "RelicChapterMaster",
+  "file": "c469c20a66ac419f82b715314127fd7d",
+  "applied": 20,
+  "missing": 0,
+  "size": 1232
+ },
+ {
+  "table": "RelicQuestMaster",
+  "file": "878da64459da48675cef21a38ac1fa7a",
+  "applied": 20,
+  "missing": 0,
+  "size": 2384
+ },
+ {
+  "table": "ResistMaster",
+  "file": "ae3793d3d1d57fe61fe38d65c81aacd0",
+  "applied": 8202,
+  "missing": 0,
+  "size": 1121728
+ },
+ {
+  "table": "RhythmGameMusicMaster",
+  "file": "66fa27e59ac105c272b4d2723f46529f",
+  "applied": 49,
+  "missing": 0,
+  "size": 7568
+ },
+ {
+  "table": "RogueliteEnemyMaster",
+  "file": "f49ecb40a0c329483810cb157b38d166",
+  "applied": 252,
+  "missing": 0,
+  "size": 35040
+ },
+ {
+  "table": "RogueliteMapMaster",
+  "file": "ef44d46375d283a46207f060aa6b306c",
+  "applied": 3,
+  "missing": 0,
+  "size": 192
+ },
+ {
+  "table": "RoleCombinationMaster",
+  "file": "a4cce747a6c647a746c291eb4daca0cf",
+  "applied": 25,
+  "missing": 0,
+  "size": 1024
+ },
+ {
+  "table": "SectionMaster",
+  "file": "821723df6cd1e139e0bc5b031cce6b49",
+  "applied": 459,
+  "missing": 0,
+  "size": 37632
+ },
+ {
+  "table": "SeriesBattleEnemyMaster",
+  "file": "b0f2bd62fa9273cc91b1fa4574f04c3a",
+  "applied": 1137,
+  "missing": 0,
+  "size": 173488
+ },
+ {
+  "table": "SeriesBattleManageMaster",
+  "file": "08509b44105c08fa1240bcc44ceb1956",
+  "applied": 5,
+  "missing": 0,
+  "size": 416
+ },
+ {
+  "table": "SeriesBattleStageGroupMaster",
+  "file": "10f6f85425615aa7491075ed5ca0b24b",
+  "applied": 24,
+  "missing": 0,
+  "size": 3728
+ },
+ {
+  "table": "SettingMaster",
+  "file": "95dd99a249f4ccea92e272c2f3b76dd6",
+  "applied": 81,
+  "missing": 0,
+  "size": 12704
+ },
+ {
+  "table": "ShotMaster",
+  "file": "3a1114c20db4d93deeed24805f859434",
+  "applied": 16844,
+  "missing": 0,
+  "size": 4057856
+ },
+ {
+  "table": "SkillEffectMaster",
+  "file": "4dd0037b513a8a53664d5bbb9e6eb802",
+  "applied": 39412,
+  "missing": 0,
+  "size": 9211328
+ },
+ {
+  "table": "SkillInfoMaster",
+  "file": "85b5147af1b4620d88c376d7e0ab3386",
+  "applied": 45,
+  "missing": 0,
+  "size": 2048
+ },
+ {
+  "table": "SkillMaster",
+  "file": "07ab80f401847938776e595b87839ebb",
+  "applied": 23015,
+  "missing": 0,
+  "size": 2927120
+ },
+ {
+  "table": "SpecialQuestTreeMaster",
+  "file": "d98c6b56522e24c5e5d16ee0b745f9df",
+  "applied": 4,
+  "missing": 0,
+  "size": 864
+ },
+ {
+  "table": "SpecialRulesEffectMaster",
+  "file": "66e8955b6b7894099f9d5b3daad0ab1e",
+  "applied": 3440,
+  "missing": 0,
+  "size": 202384
+ },
+ {
+  "table": "SpecialRulesMaster",
+  "file": "c80f0c76a1e1ba0968efb327a6b7131c",
+  "applied": 860,
+  "missing": 0,
+  "size": 30960
+ },
+ {
+  "table": "SpellcardMaster",
+  "file": "e8e8a5d4d5cfb7f38357a566e2338852",
+  "applied": 23542,
+  "missing": 0,
+  "size": 5614704
+ },
+ {
+  "table": "TipsMaster",
+  "file": "49c2b1d8b203fa168d582b3ed15d5b29",
+  "applied": 350,
+  "missing": 0,
+  "size": 18560
+ },
+ {
+  "table": "TowerMaster",
+  "file": "1be9ef11360536e059a1fd6aec1c687e",
+  "applied": 692,
+  "missing": 0,
+  "size": 80640
+ },
+ {
+  "table": "UnitMotivationMaster",
+  "file": "29441efa47af6cc05f64a8f8beac2885",
+  "applied": 4,
+  "missing": 0,
+  "size": 448
+ },
+ {
+  "table": "UnitReincarnationReleaseMaster",
+  "file": "b16ffef5de5b03fc1581d83ce2690e44",
+  "applied": 1413,
+  "missing": 0,
+  "size": 125008
+ },
+ {
+  "table": "UnitSpeechMaster",
+  "file": "9754871b3ae9a7b46563304ce067339f",
+  "applied": 1965,
+  "missing": 0,
+  "size": 301920
+ },
+ {
+  "table": "UnitTalkMaster",
+  "file": "077aacf7784f4f7354e7f716e3ec0bcf",
+  "applied": 304,
+  "missing": 0,
+  "size": 18400
+ },
+ {
+  "table": "UnitTrustGrowthMaster",
+  "file": "adc62f65ee9b559f2dc7dab43767645e",
+  "applied": 5,
+  "missing": 0,
+  "size": 496
+ },
+ {
+  "table": "ValuePackShopMaster",
+  "file": "e62a5ee6cffce97291ab789ab01473b4",
+  "applied": 176,
+  "missing": 0,
+  "size": 977440
+ },
+ {
+  "table": "ValuePackShopSubCategoryMaster",
+  "file": "fe1811d1cb58fbd771b8cdd467b87ce3",
+  "applied": 10,
+  "missing": 0,
+  "size": 8128
+ },
+ {
+  "table": "VoiceMaster",
+  "file": "8eaae298917d77a53f52fc670214a2f1",
+  "applied": 28947,
+  "missing": 0,
+  "size": 2717680
+ },
+ {
+  "table": "VoiceSetMaster",
+  "file": "aebb542233e1cd2fee3a6068348dda33",
+  "applied": 2610,
+  "missing": 0,
+  "size": 91072
+ },
+ {
+  "table": "VoiceTypeMaster",
+  "file": "769df0be1d014190018dbd821d681e8f",
+  "applied": 65,
+  "missing": 0,
+  "size": 1024
+ }
+]
