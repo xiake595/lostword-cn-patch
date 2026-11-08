@@ -64,3 +64,18 @@
 ## 校验
 
 v1.1 数据包 SHA-256：`956309b2ebe9031a62aa84e2e424671f1a242d2dc5c3df34596678bed9ab8c48`
+---
+
+## ⚠️ 风险提示
+
+1. **注入风险**：v1.1 用 LSPatch 注入游戏进程，部分游戏会检测注入框架，处罚可能是封号。**建议使用副号测试。**
+2. **账号风险**：卸载原版会清空本地数据。**安装前请确认已绑定引继码**，否则可能找不回账号。
+3. **版权**：游戏资源版权归 Good Smile Company / Team Shanghai Alice 所有，本项目仅供学习交流，请于下载后 24 小时内删除。
+
+## 国内下载
+
+GitHub Release 在国内直连较慢，可先把 `lwlocal.zip` 通过网盘/加速站下载下来，放到：
+
+    Android/data/jp.goodsmile.touhoulostwordglobal_android/files/lwlocal.zip
+
+模块启动时检测到本地包会跳过下载，直接解压。
