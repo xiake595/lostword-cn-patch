@@ -50,6 +50,9 @@
 
 把压缩包解压到**任意英文或中文路径**都行，例如：
 
+> 如果你是从 **GitHub 仓库** 页面下载的，仓库里只有脚本、没有 `lwlocal.zip`（424 MB 太大）。
+> 请到 [Releases](https://github.com/xiake595/lostword-cn-patch/releases/latest) 单独下载 `lwlocal.zip`，**放在和 `一键安装.bat` 同一目录**。
+
 ```
 D:\东方归言录汉化v1.3\
     ├─ lwlocal.zip          424.7 MB   汉化数据
@@ -302,3 +305,4 @@ adb\               8 MB      自带 adb
 version.txt        13 B      版本标记
 使用说明.md         本文件
 ```
+
