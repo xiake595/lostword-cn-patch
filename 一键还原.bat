@@ -1,14 +1,15 @@
 @echo off
 chcp 936 >nul
-title ¶«·½¹éÑÔÂ¼ ºº»¯²å¼ş
+title ä¸œæ–¹å½’è¨€å½• æ±‰åŒ– v1.3 ä¸€é”®è¿˜åŸ
 setlocal
 set "ADB=%~dp0adb\adb.exe"
+if not exist "%ADB%" set "ADB=adb"
 set "PKG=jp.goodsmile.touhoulostwordglobal_android"
 set "DEV=%~1"
 if "%DEV%"=="" set "DEV=emulator-5554"
-echo Õâ»áÉ¾³ı±¾²å¼ş¸²¸ÇµÄÎÄ¼ş£¨²»Ó°ÏìÓÎÏ·ÆäËû»º´æ£©¡£
+echo è¿™ä¼šåˆ é™¤æ±‰åŒ–å†™å…¥çš„æ–‡ä»¶ï¼ˆä¸å½±å“æ¸¸æˆå­˜æ¡£ï¼‰ã€‚
 pause
 "%ADB%" -s %DEV% shell "su -c 'F=/sdcard/Android/data/%PKG%/files/lw_installed.txt; if [ -f $F ]; then while read n; do rm -rf /sdcard/Android/data/%PKG%/files/UnityCache/Shared/$n; rm -f /data/data/%PKG%/files/cache/$n; done < $F; rm -f $F; fi'"
 echo.
-echo ÒÑÉ¾³ıºº»¯ÎÄ¼ş¡£ÖØĞÂÆô¶¯ÓÎÏ·£¬È±Ê§µÄ²¿·Ö»á×Ô¶¯ÖØĞÂÏÂÔØ¡£
+echo å·²åˆ é™¤æ±‰åŒ–æ–‡ä»¶ï¼Œæ¸¸æˆå¯åŠ¨æ—¶ä¼šè‡ªåŠ¨é‡æ–°ä¸‹è½½ç¼ºå¤±éƒ¨åˆ†ã€‚
 pause
