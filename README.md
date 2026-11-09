@@ -11,6 +11,9 @@
 | `LwLocal-1.3.apk` | 汉化模块（16 KB，只有代码） |
 | `lwlocal.zip` | 汉化数据（424.7 MB / 429 个文件） |
 | `version.txt` | 版本标记 |
+`apply.sh` / `一键安装.bat` / `一键还原.bat` | 模拟器（root）一键安装 / 还原 |
+
+> **详细操作指南**：[INSTALL.md](INSTALL.md) —— 模拟器与手机两种方式的分步教程、故障对照表
 
 ## 更新记录
 
