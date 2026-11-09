@@ -1,52 +1,46 @@
 @echo off
 chcp 936 >nul
-title ¶«·½¹éÑÔÂ¼ ºº»¯²å¼ş
+title ä¸œæ–¹å½’è¨€å½• æ±‰åŒ– v1.3 ä¸€é”®å®‰è£…ï¼ˆæ¨¡æ‹Ÿå™¨/å·²rootè®¾å¤‡ï¼‰
 setlocal
 set "ADB=%~dp0adb\adb.exe"
+if not exist "%ADB%" set "ADB=adb"
 set "PKG=jp.goodsmile.touhoulostwordglobal_android"
 set "DEV=%~1"
 if "%DEV%"=="" set "DEV=emulator-5554"
 echo ============================================
-echo    ¶«·½¹éÑÔÂ¼ ºº»¯²å¼ş  Ò»¼ü°²×°
+echo   ä¸œæ–¹å½’è¨€å½• æ±‰åŒ– v1.3  ä¸€é”®å®‰è£…
 echo ============================================
-echo Éè±¸: %DEV%
+echo è®¾å¤‡: %DEV%
 echo.
 "%ADB%" -s %DEV% get-state >nul 2>&1
 if errorlevel 1 (
-  echo [´íÎó] Á¬½Ó²»µ½Éè±¸ %DEV%
-  echo 1. ÏÈÆô¶¯Ä£ÄâÆ÷
-  echo 2. È·ÈÏ adb devices ÀïÓĞÉè±¸
-  echo 3. Éè±¸ºÅ²»Í¬£ºÒ»¼ü°²×°.bat ÄãµÄÉè±¸ºÅ
+  echo [é”™è¯¯] è¿æ¥ä¸åˆ°è®¾å¤‡ %DEV%
+  echo   1. å…ˆå¯åŠ¨æ¨¡æ‹Ÿå™¨
+  echo   2. ç¡®è®¤ adb devices èƒ½çœ‹åˆ°è®¾å¤‡
+  echo   3. è®¾å¤‡å·ä¸åŒå°±: ä¸€é”®å®‰è£….bat è®¾å¤‡å·
   pause
   exit /b 1
 )
-
-rem °æ±¾Ğ£Ñé
-for /f "tokens=2 delims==" %%v in ('"%ADB%" -s %DEV% shell dumpsys package %PKG% ^| findstr /C:"versionName"') do set "GV=%%v"
-set "GV=%GV: =%"
-if not "%GV%"=="1.57.0" (
-  echo [¾¯¸æ] ÓÎÏ·°æ±¾ÊÇ %GV%£¬±¾²¹¶¡¶ÔÓ¦ 1.57.0
-  echo °æ±¾²»Ò»ÖÂ¿ÉÄÜ×ÊÔ´´íÂÒ£¬½¨ÒéÏÈ¸üĞÂ²¹¶¡
+echo [1/5] è§£å‹æ•°æ®åŒ…ï¼ˆ424 MBï¼Œçº¦éœ€ 1 åˆ†é’Ÿï¼‰...
+if exist "%TEMP%\lw_v13" rmdir /s /q "%TEMP%\lw_v13"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Force -LiteralPath '%~dp0lwlocal.zip' -DestinationPath '%TEMP%\lw_v13'"
+if not exist "%TEMP%\lw_v13\lwlocal\master" (
+  echo [é”™è¯¯] è§£å‹å¤±è´¥ï¼Œæ£€æŸ¥ lwlocal.zip æ˜¯å¦å®Œæ•´
   pause
+  exit /b 1
 )
-
-echo [1/4] ÍÆËÍÎÄ¼ş£¨Ô¼ 380 MB£¬ĞèÒª 1~2 ·ÖÖÓ£¬ÇëÎğ¹Ø±Õ´°¿Ú£©...
-"%ADB%" -s %DEV% shell "rm -rf /sdcard/tmp_lw"
-"%ADB%" -s %DEV% shell "mkdir -p /sdcard/tmp_lw"
-"%ADB%" -s %DEV% push "%~dp0Êı¾İ\bundles" "/sdcard/tmp_lw/"
-"%ADB%" -s %DEV% push "%~dp0Êı¾İ\master" "/sdcard/tmp_lw/"
-"%ADB%" -s %DEV% push "%~dp0Êı¾İ\apply.sh" "/sdcard/tmp_lw/apply.sh"
-
-echo [2/4] Ğ´ÈëÓÎÏ·Ä¿Â¼£¨ĞèÒª root£©...
+echo [2/5] æ¨é€åˆ°è®¾å¤‡ï¼ˆçº¦ 1~2 åˆ†é’Ÿï¼‰...
+"%ADB%" -s %DEV% shell "rm -rf /sdcard/tmp_lw; mkdir -p /sdcard/tmp_lw"
+"%ADB%" -s %DEV% push "%TEMP%\lw_v13\lwlocal\bundles" "/sdcard/tmp_lw/"
+"%ADB%" -s %DEV% push "%TEMP%\lw_v13\lwlocal\master" "/sdcard/tmp_lw/"
+"%ADB%" -s %DEV% push "%~dp0apply.sh" "/sdcard/tmp_lw/apply.sh"
+echo [3/5] å†™å…¥æ¸¸æˆç›®å½•ï¼ˆéœ€è¦ rootï¼‰...
 "%ADB%" -s %DEV% shell "su -c 'sh /sdcard/tmp_lw/apply.sh'"
-
-echo [3/4] ¼ÇÂ¼°²×°Çåµ¥ ...
+echo [4/5] è®°å½•å®‰è£…æ¸…å•...
 "%ADB%" -s %DEV% shell "su -c 'cd /sdcard/tmp_lw/bundles && for d in *; do echo $d; done > /sdcard/tmp_lw/installed.txt; ls /sdcard/tmp_lw/master >> /sdcard/tmp_lw/installed.txt; cp /sdcard/tmp_lw/installed.txt /sdcard/Android/data/%PKG%/files/lw_installed.txt'"
-
-echo [4/4] Æô¶¯ÓÎÏ· ...
+echo [5/5] é‡å¯æ¸¸æˆ...
 "%ADB%" -s %DEV% shell am force-stop %PKG%
 "%ADB%" -s %DEV% shell "monkey -p %PKG% -c android.intent.category.LAUNCHER 1"
-
 echo.
-echo Íê³É¡£½øÓÎÏ·¿´Ğ§¹û£»ÈçÈÔÓ¢ÎÄ£¬ÓÎÏ·ÄÚÇå³ı»º´æºóÖØ½ø¡£
+echo å®Œæˆã€‚è¿›æ¸¸æˆçœ‹å‰§æƒ…/æŠ€èƒ½æ˜¯å¦ä¸­æ–‡ï¼›å¦‚æœæ˜¯è‹±æ–‡ï¼Œè¿›è®¾ç½®åˆ‡æ¢ä¸€æ¬¡è¯­è¨€å†åˆ‡å›æ¥ã€‚
 pause
