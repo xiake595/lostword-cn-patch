@@ -1,0 +1,7 @@
+
+11-09 07:48:10.627 24246 24246 I TlwCn   : onCreate filesDir=/data/user/0/jp.goodsmile.touhoulostwordglobal_android/files extRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_android/files skipExtract=false noAutolaunch=false
+11-09 07:48:10.636 24246 24246 I TlwCn   : probeAsset: zipPresent=true version=v1.3-20261109b
+11-09 07:48:10.637 24246 24246 I TlwCn   : up-to-date: marker=v1.3-20261109b zipVersion=v1.3-20261109b
+11-09 07:48:10.645 24246 24246 I TlwCn   : game activity started: com.google.firebase.MessagingUnityPlayerActivity
+11-09 07:48:17.535   546   546 I adbd    : adbd service requested 'shell,v2:export ANDROID_LOG_TAGS=''; exec logcat '-d' '-v' 'time' '-s' 'TlwCn:V''
+11-09 07:48:17.668   546   546 I adbd    : adbd service requested 'shell,v2:export ANDROID_LOG_TAGS=''; exec logcat '-d' '-v' 'brief' '-s' 'TlwCn:V''

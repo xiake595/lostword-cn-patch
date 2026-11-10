@@ -1,60 +1,38 @@
-# 东方归言录（国际服）简体中文汉化补丁
+# 东方归言录：简体汉化与帧率解锁
 
-> 包名 `jp.goodsmile.touhoulostwordglobal_android` · 对应游戏版本 **1.57.0 (6728)**
+国际服简体中文汉化、独立帧率解锁，以及两者合并的 APK 构建项目。仓库按功能分为三个目录，保存源码、脚本、必要图标与技术文档。
 
-## 下载
+当前国际服适配基线为 **1.57.0 / versionCode 6728 / arm64-v8a**，包名 `jp.goodsmile.touhoulostwordglobal_android`。FPS 悬浮窗另保留日服 **1.71.1** 的构建入口；汉化与合并版仅针对国际服。
 
-**最新版：v1.3** → [Releases](https://github.com/xiake595/lostword-cn-patch/releases/latest)
+## 目录与选择
 
-| 文件 | 说明 |
-|---|---|
-| `LwLocal-1.3.apk` | 汉化模块（16 KB，只有代码） |
-| `lwlocal.zip` | 汉化数据（424.7 MB / 429 个文件） |
-| `version.txt` | 版本标记 |
-`apply.sh` / `一键安装.bat` / `一键还原.bat` | 模拟器（root）一键安装 / 还原 |
+| 目录 | 内容 | 使用方式 |
+|---|---|---|
+| [cn-patch](cn-patch/README.md) | 汉化安装器源码、root 安装/还原脚本、数据规格与分析工具 | 只需要汉化；旧 LSPatch 模块由 Release 获取 |
+| [unlock-FPS](unlock-FPS/README.md) | APK 内置悬浮窗源码、独立 root/ADB 工具 | 只需要帧率解锁 |
+| [integrated](integrated/README.md) | 汉化首启安装器 + FPS 悬浮窗的合并构建 | 一个 APK，首启离线解包汉化数据，无需 root/LSPatch |
 
-> **详细操作指南**：[INSTALL.md](INSTALL.md) —— 模拟器与手机两种方式的分步教程、故障对照表
+源码仓库不包含游戏原始安装包、汉化大数据包、生成的 APK/dex/class、反编译输出、设备缓存、第三方 SDK/ADB/R8，以及签名密钥。这些输入与工具需自行准备，见 [构建准备](docs/BUILDING.md)。原工作目录及安装包留在本地。
 
-## 更新记录
+## 下载与安装
 
-### v1.3
-- **剧情主角台词全部汉化**：9,851 条，覆盖 4,833 个对话对象 / 206 个资源包
-- **技能名 / 符卡名 / 能力名汉化**：5,117 条（10 张主数据表）
-- 保留富文本标记（`<color>`、`{0}` 占位符、`\x1b` 玩家名占位符）
+[Releases](https://github.com/xiake595/lostword-cn-patch/releases) 保留既有汉化发布；本次整理不发布新的二进制成品。既有 **v1.3 是汉化数据版本**，并不代表 FPS 或合并版的版本。
 
-### v1.2
-- 补翻国际服专属技能/能力/符卡**说明句** 2,525 条
-- 术语统一（迅速 / 结界异常 / HP / 全角括号）、角色名统一（姥芽 / 驯子 / 千亦）
+- 汉化数据：v1.3 的 `lwlocal.zip`、`version.txt`；旧手机模块：`LwLocal-1.3.apk`。
+- 只用汉化：见 [cn-patch 使用说明](cn-patch/README.md)。
+- FPS 与合并版：按各目录 README 自行构建；GitHub 的“Download ZIP”仅含源码。
 
-### v1.1
-- 字体按国服还原（英雄黑体 + 粗雅宋）、TMP `等级` 方块修复、排序筛选界面汉化、补 `enText` 字段
+v1.3 `lwlocal.zip` SHA-256：
+`a96657bfecd65a4eb1f84ea2055b927956c4ac8c29bcd66650217a1307030792`
 
-## 已知未完成
+数据包为 445,336,186 字节（约 424.7 MiB），解包数据 445,234,854 字节；包含 **84 个 master 文件（83 张表 + manifest.json）、345 个资源包和 1 个版本文件**。合并版会为资源包额外生成 345 个 `__info`。
 
-- 任务说明（如 `Log in on 5 days`）仍为英文
-- 部分 UI 标签（`Switch Effect` 等）仍为英文
-- 伙伴一览卡片角上的职业标记 `ATK/SUPP` 是图片，未替换
+## 当前行为与限制
 
-## 两种用法
+- 合并版首启解包，后续按版本标记快速进入游戏；升级标记会触发重新安装汉化数据。修复了缺少 Unity `__info` 导致中文缓存被丢弃的问题，并提供悬浮窗“缓存修复”按钮。
+- FPS 悬浮窗支持设置目标帧率、还原默认、隐藏与拖动；实际帧率受屏幕刷新率、vsync、温控和设备性能影响。
+- 汉化覆盖剧情、部分 UI、字体及主数据表，仍有任务说明、派遣界面等未翻译内容。定位报告见 [派遣 UI 分析](cn-patch/docs/LOCALIZATION-errand-ui.md)，该报告不代表已完成翻译。
+- 重打包会改变签名。同包名无法直接覆盖官方客户端，卸载会删除本地数据；先确认引继方式。自行生成的签名也不能覆盖旧作者签名的补丁包。Google 登录可能受签名校验影响。
+- 游戏更新后，需重新核对原始 APK、ABI、偏移与汉化数据兼容性。历史测试记录针对当时环境，未承诺其他版本。
 
-### A. 非 root 手机（LSPatch 模块）
-1. 装 [LSPatch](https://github.com/JingMatrix/LSPatch/releases)（Android 15/16 用 JingMatrix 版）
-2. 用 LSPatch 给游戏打补丁，模块选 `LwLocal-1.3.apk`
-3. 卸载原版 → 安装补丁版（签名不同必须卸载，账号在服务器不受影响）
-4. 首次启动自动下载 `lwlocal.zip`
-
-模块内置多源回退：GitHub → gh-proxy → ghproxy.net → 127.0.0.1:8899。
-
-### B. 模拟器（已 root）
-一键脚本见 v1.0，数据目录结构相同。
-
-## 数据落在哪
-
-| 内容 | 目标路径 |
-|---|---|
-| 84 张主数据表 | `files/cache/` |
-| 345 个资源包 | `Android/data/<包名>/files/UnityCache/Shared/<包名>/<哈希>/__data` |
-
-## 校验
-
-v1.3 数据包 SHA-256：`a96657bfecd65a4eb1f84ea2055b927956c4ac8c29bcd66650217a1307030792`
+整理记录与文件来源见 [仓库维护说明](docs/REPOSITORY.md)。

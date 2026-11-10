@@ -1,0 +1,14 @@
+--------- beginning of main
+11-09 17:57:14.281 25644 25644 I TlwFps  : installed
+11-09 17:57:14.310 25644 25644 I TlwCn   : onCreate filesDir=/data/user/0/jp.goodsmile.touhoulostwordglobal_android/files extRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_android/files skipExtract=false noAutolaunch=false
+11-09 17:57:14.310 25644 25644 I TlwCn   : probeAsset: zipPresent=true version=v1.3-20261109b+ci1
+11-09 17:57:14.321 25644 25644 I TlwCn   : extract start: filesDir=/data/user/0/jp.goodsmile.touhoulostwordglobal_android/files extRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_android/files
+11-09 17:57:14.323 25644 31757 I TlwCn   : targets: cache=/data/user/0/jp.goodsmile.touhoulostwordglobal_android/files/cache bundleRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_android/files/UnityCache/Shared
+11-09 17:57:14.325 25644 31757 I TlwCn   : data pack version.txt = [v1.1-20261108]
+11-09 17:57:14.418 25644 25644 I TlwFps  : system overlay attached 174x174
+11-09 17:57:14.418 25644 25644 I TlwFps  : screen 1200x2670
+11-09 17:57:14.438 25644 25644 I TlwFps  : custom icon loaded 253x253
+11-09 17:57:15.821 25644 31757 I TlwCn   : marker written: /data/user/0/jp.goodsmile.touhoulostwordglobal_android/files/tlw_cn/installed.txt = v1.3-20261109b+ci1
+11-09 17:57:15.821 25644 31757 I TlwCn   : extract done: entries=430 seen=430 master=84 bundles=345 cacheInfo=345 bytes=445234854 elapsedMs=1500 version=v1.3-20261109b+ci1
+11-09 17:57:15.869 25644 25644 I TlwCn   : game activity started: com.google.firebase.MessagingUnityPlayerActivity
+11-09 17:57:16.470 25644 31732 I TlwFps  : attach base=0x7567a86000 views=1 tfr=0x199cc54 writable=true via 缓存 1.57.0

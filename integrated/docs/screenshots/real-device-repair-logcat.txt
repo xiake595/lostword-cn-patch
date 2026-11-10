@@ -1,0 +1,24 @@
+--------- beginning of main
+11-09 18:09:05.062 31427 31427 I TlwCn   : cache repair: marker deleted, relaunch scheduled, killing process
+11-09 18:09:07.906 32024 32024 I TlwFps  : installed
+11-09 18:09:07.969 32024 32024 I TlwCn   : onCreate filesDir=/data/user/0/jp.goodsmile.touhoulostwordglobal_android/files extRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_android/files skipExtract=false noAutolaunch=false
+11-09 18:09:07.969 32024 32024 I TlwCn   : probeAsset: zipPresent=true version=v1.3-20261109b+ci1
+11-09 18:09:07.979 32024 32024 I TlwCn   : extract start: filesDir=/data/user/0/jp.goodsmile.touhoulostwordglobal_android/files extRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_android/files
+11-09 18:09:07.981 32024  3209 I TlwCn   : targets: cache=/data/user/0/jp.goodsmile.touhoulostwordglobal_android/files/cache bundleRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_android/files/UnityCache/Shared
+11-09 18:09:07.986 32024  3209 I TlwCn   : data pack version.txt = [v1.1-20261108]
+11-09 18:09:08.039 32024 32024 I TlwFps  : system overlay attached 174x174
+11-09 18:09:08.040 32024 32024 I TlwFps  : screen 1200x2670
+11-09 18:09:08.056 32024 32024 I TlwFps  : custom icon loaded 253x253
+11-09 18:09:08.921 32024  3209 I TlwCn   : marker written: /data/user/0/jp.goodsmile.touhoulostwordglobal_android/files/tlw_cn/installed.txt = v1.3-20261109b+ci1
+11-09 18:09:08.922 32024  3209 I TlwCn   : extract done: entries=430 seen=430 master=84 bundles=345 cacheInfo=345 bytes=445234854 elapsedMs=943 version=v1.3-20261109b+ci1
+11-09 18:09:08.991 32024 32024 I TlwCn   : game activity started: com.google.firebase.MessagingUnityPlayerActivity
+11-09 18:09:09.413 32024  3181 I TlwFps  : attach base=0x755f88c000 views=1 tfr=0x199cc54 writable=true via 缓存 1.57.0
+11-09 18:09:15.984 32526 32526 I TlwFps  : installed
+11-09 18:09:16.044 32526 32526 I TlwCn   : onCreate filesDir=/data/user/0/jp.goodsmile.touhoulostwordglobal_android/files extRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_android/files skipExtract=false noAutolaunch=false
+11-09 18:09:16.044 32526 32526 I TlwCn   : probeAsset: zipPresent=true version=v1.3-20261109b+ci1
+11-09 18:09:16.044 32526 32526 I TlwCn   : up-to-date: marker=v1.3-20261109b+ci1 zipVersion=v1.3-20261109b+ci1
+11-09 18:09:16.051 32526 32526 I TlwCn   : game activity started: com.google.firebase.MessagingUnityPlayerActivity
+11-09 18:09:16.144 32526 32526 I TlwFps  : system overlay attached 174x174
+11-09 18:09:16.144 32526 32526 I TlwFps  : screen 2670x1200
+11-09 18:09:16.160 32526 32526 I TlwFps  : custom icon loaded 253x253
+11-09 18:09:17.026 32526  3660 I TlwFps  : attach base=0x75606b8000 views=1 tfr=0x199cc54 writable=true via 缓存 1.57.0

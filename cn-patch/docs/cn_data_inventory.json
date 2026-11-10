@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "generated_by": "cn-analyst (task-1)",
+  "generated_at": "2026-11-09T15:30:00+08:00",
+  "source": {
+    "zip": "work/lwlocal.zip",
+    "zip_url": "https://github.com/xiake595/lostword-cn-patch/releases/download/v1.3/lwlocal.zip",
+    "zip_bytes": 445336186,
+    "zip_sha256": "a96657bfecd65a4eb1f84ea2055b927956c4ac8c29bcd66650217a1307030792",
+    "repo_manifest": "work/cn-patch/manifest.json",
+    "module_apk": "work/LwLocal-1.3.apk (package lw.mod, entry lw.mod.LwLocalHook)",
+    "game": {
+      "package": "jp.goodsmile.touhoulostwordglobal_android",
+      "version_name": "1.57.0",
+      "version_code": 6728
+    }
+  },
+  "version_strings": {
+    "release_asset_version_txt": "v1.3-20261109b",
+    "zip_inner_lwlocal_version_txt": "v1.1-20261108",
+    "zip_inner_version_txt_raw_hex": "76312e312d32303236313130380a",
+    "note": "zip 内 version.txt 是滞后元数据(v1.1-20261108)，真实数据版本以 Release 的独立 version.txt 为准；模块只跳过该条目，不校验内容"
+  },
+  "totals": {
+    "zip_entries": 430,
+    "installed_files": 429,
+    "total_uncompressed_bytes": 445234868,
+    "total_compressed_bytes": 445234868,
+    "zip_bytes": 445336186,
+    "all_stored": true,
+    "bundle_files": 345,
+    "bundle_dir_count_A": 345,
+    "bundle_bytes": 395024307,
+    "master_entries": 84,
+    "master_data_tables": 83,
+    "master_bytes": 50210547,
+    "root_entries": 1,
+    "root_bytes": 14,
+    "expected_files_after_install": {
+      "filesDir_cache": 84,
+      "external_UnityCache_Shared": 345,
+      "note": "官方模块 unzip 把 lwlocal/master/* (含 manifest.json, 84 项) 写入 files/cache/，把 345 个 __data 写入 UnityCache/Shared/<A>/<B>/"
+    }
+  },
+  "bundle_manifest_crosscheck": {
+    "manifest_bundle_count": 340,
+    "zip_bundle_A_dirs": 345,
+    "extra_A_dirs_not_in_repo_manifest": [
+      "4412382594c4e8276deee3609268f0c4",
+      "7113598fee1ac4c04f47c5ce4a8d4e82",
+      "87734df2e56ee8647aa3b9f35821ca50",
+      "b90bfea5da70e7453beabeabe1bf58f3",
+      "f4ec32aa29cb5b7897385b52d886201d"
+    ],
+    "missing_A_dirs_in_zip": [],
+    "extra_dir_details": [
+      {
+        "A": "4412382594c4e8276deee3609268f0c4",
+        "B": "6f06c2486fef16b82f1211e334502384",
+        "size": 2638407,
+        "asset_paths": [
+          "BuildPlayer-EventLoginBonusScene.sharedAssets",
+          "BuildPlayer-EventLoginBonusScene"
+        ]
+      },
+      {
+        "A": "7113598fee1ac4c04f47c5ce4a8d4e82",
+        "B": "7e3343c212f5fa2d0ac02638ad8e79a3",
+        "size": 2784696,
+        "asset_paths": [
+          "BuildPlayer-EventScene.sharedAssets",
+          "BuildPlayer-EventScene"
+        ]
+      },
+      {
+        "A": "87734df2e56ee8647aa3b9f35821ca50",
+        "B": "dfc04df13e8660166b3b8ab57700c893",
+        "size": 593480,
+        "asset_paths": [
+          "BuildPlayer-IdleSearchScene.sharedAssets",
+          "BuildPlayer-IdleSearchScene"
+        ]
+      },
+      {
+        "A": "b90bfea5da70e7453beabeabe1bf58f3",
+        "B": "55c7a9787fb3bbd6a55e83ab157195a3",
+        "size": 1029397,
+        "asset_paths": [
+          "BuildPlayer-AbilitySealScene.sharedAssets",
+          "BuildPlayer-AbilitySealScene"
+        ]
+      },
+      {
+        "A": "f4ec32aa29cb5b7897385b52d886201d",
+        "B": "070880c4dcab0d9beb080a5cd9dc77e0",
+        "size": 1103870,
+        "asset_paths": [
+          "BuildPlayer-RogueLitePickUnitScene.sharedAssets",
+          "BuildPlayer-RogueLitePickUnitScene"
+        ]
+      }
+    ]
+  },
+  "master_crosscheck": {
+    "inner_manifest_entries": 81,
+    "zip_master_data_tables": 83,
+    "size_mismatch": [
+      {
+        "file": "07ab80f401847938776e595b87839ebb",
+        "zip": 2921120,
+        "manifest": 2927120
+      },
+      {
+        "file": "3a1114c20db4d93deeed24805f859434",
+        "zip": 4029232,
+        "manifest": 4057856
+      },
+      {
+        "file": "4dd0037b513a8a53664d5bbb9e6eb802",
+        "zip": 9200480,
+        "manifest": 9211328
+      },
+      {
+        "file": "711e2ff5cc50394ad0c84b04985eba7d",
+        "zip": 3379088,
+        "manifest": 3437072
+      },
+      {
+        "file": "7bcad78910c0681dcf29320fcb12eabf",
+        "zip": 366240,
+        "manifest": 367376
+      },
+      {
+        "file": "8eaae298917d77a53f52fc670214a2f1",
+        "zip": 2707536,
+        "manifest": 2717680
+      },
+      {
+        "file": "902f9aa853b68bfeee4fa42dfd75a8a2",
+        "zip": 1158960,
+        "manifest": 1170464
+      },
+      {
+        "file": "9754871b3ae9a7b46563304ce067339f",
+        "zip": 273360,
+        "manifest": 301920
+      },
+      {
+        "file": "ae3793d3d1d57fe61fe38d65c81aacd0",
+        "zip": 1120016,
+        "manifest": 1121728
+      },
+      {
+        "file": "bab1aa87e3f50175dd6e076499373344",
+        "zip": 223856,
+        "manifest": 225056
+      },
+      {
+        "file": "c04349322003664e4ed1d16a5ec17989",
+        "zip": 1855216,
+        "manifest": 1879008
+      },
+      {
+        "file": "e8e8a5d4d5cfb7f38357a566e2338852",
+        "zip": 5591136,
+        "manifest": 5614704
+      },
+      {
+        "file": "f373f4e48df131a7c7676c79122cf8bf",
+        "zip": 6983312,
+        "manifest": 6742208
+      }
+    ],
+    "zip_master_not_in_inner_manifest": [
+      "4c6c82a379efc3a6900021cb359ab194",
+      "6d7c73da9f77e827b76d4bf384bb509b"
+    ],
+    "inner_manifest_not_in_zip": []
+  },
+  "samples_sha256": [
+    {
+      "zip_entry": "lwlocal/master/077aacf7784f4f7354e7f716e3ec0bcf",
+      "size": 18400,
+      "sha256": "d6e7b0095444469600432dc133959490d7af7015caf403cf9582d3cd365a3c7e",
+      "install_as": "master/077aacf7784f4f7354e7f716e3ec0bcf"
+    },
+    {
+      "zip_entry": "lwlocal/master/07ab80f401847938776e595b87839ebb",
+      "size": 2921120,
+      "sha256": "8465a4309ecdf2ec4725aebbc15d10db52c7be10bc8a5c7cc5cab994729eeeb8",
+      "install_as": "master/07ab80f401847938776e595b87839ebb"
+    },
+    {
+      "zip_entry": "lwlocal/master/08509b44105c08fa1240bcc44ceb1956",
+      "size": 416,
+      "sha256": "251d3ac7564de997bf759cc6cc72248b5a905ef37a70d39bade1a2a21050ecf6",
+      "install_as": "master/08509b44105c08fa1240bcc44ceb1956"
+    },
+    {
+      "zip_entry": "lwlocal/bundles/006662e3887bc5d201623e96f723449b/b8fe0414e768623f57dbdc064105b65e/__data",
+      "size": 984647,
+      "sha256": "ce13eb5af787ac3e6838e41aa6df6f15eb1833d01e0cf55d4f2f4a4c2b33799d",
+      "install_as": "bundles/006662e3887bc5d201623e96f723449b/b8fe0414e768623f57dbdc064105b65e/__data"
+    },
+    {
+      "zip_entry": "lwlocal/bundles/01686d613089f057172ba7f69b0c0609/0740c12fb68652007dd5bb126c791ff6/__data",
+      "size": 22995,
+      "sha256": "3e93bd14c26a25a0e340d46047a1e6f42420b5aa2e4d8f0388b91b609044c630",
+      "install_as": "bundles/01686d613089f057172ba7f69b0c0609/0740c12fb68652007dd5bb126c791ff6/__data"
+    },
+    {
+      "zip_entry": "lwlocal/bundles/034be7d1be2edb47d55148871e0f9882/36f497f26c0b58a9f6a5c773621ab839/__data",
+      "size": 1433232,
+      "sha256": "070a89fc2a17979e1b7db32783e616a9af731bc0b6a38938ee58b7c53d22a469",
+      "install_as": "bundles/034be7d1be2edb47d55148871e0f9882/36f497f26c0b58a9f6a5c773621ab839/__data"
+    }
+  ],
+  "install_map": {
+    "bundle": "lwlocal/bundles/<A>/<B>/__data -> <externalFilesDir>/UnityCache/Shared/<A>/<B>/__data",
+    "master": "lwlocal/master/<file> -> <filesDir>/cache/<file>  (官方模块写入全部 84 项: 83 张 hash 表 + manifest.json)",
+    "version_txt": "跳过 (官方模块 unzip: !name.endsWith(\"version.txt\"))；zip 内 version.txt 不落盘",
+    "no_info": "不创建任何 __info；官方数据包与模块均不写 __info"
+  },
+  "notes": [
+    "master 84 项 = 83 张 hash 表 + master/manifest.json；repo manifest 的 master_tables 84 条把 manifest.json 也算了一条，勿当作 84 张表。",
+    "zip 内 master/manifest.json 自带 81 条条目且有 2 个表未列入、13 个 size 字段与 zip 实际不符 → 不要用 zip 内 manifest 过滤或校验。",
+    "345 = 340(repo manifest) + 5 个 v1.1 新增场景包；官方模块不解析任何 manifest，逐条解包全部 430 entries → 安装器必须装全部 345。",
+    "zip 内 lwlocal/version.txt = v1.1-20261108 是滞后元数据；Release 独立 version.txt = v1.3-20261109b 才是真实版本；marker 建议用后者或 zip sha256。",
+    "官方模块唯一 hook = Application.attach，仅写文件、不 hook 资源加载/下载/缓存校验；首启预置可行性为高置信推断（游戏侧 AssetDownloader.IsCacheValid 走 Caching.IsVersionCached / File.Exists），详见 CN_DATA_SPEC.md §5。"
+  ]
+}

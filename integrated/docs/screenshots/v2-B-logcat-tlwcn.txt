@@ -1,0 +1,11 @@
+
+11-09 07:39:18.758 18184 18184 I TlwCn   : debug hook (external): /storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_android/files/tlw_cn/no_autolaunch
+11-09 07:39:18.761 18184 18184 I TlwCn   : onCreate filesDir=/data/user/0/jp.goodsmile.touhoulostwordglobal_android/files extRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_android/files skipExtract=false noAutolaunch=true
+11-09 07:39:18.763 18184 18184 I TlwCn   : probeAsset: zipPresent=true version=v1.1-20261108
+11-09 07:39:18.806 18184 18184 I TlwCn   : extract start: filesDir=/data/user/0/jp.goodsmile.touhoulostwordglobal_android/files extRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_android/files
+11-09 07:39:18.824 18184 18237 I TlwCn   : targets: cache=/data/user/0/jp.goodsmile.touhoulostwordglobal_android/files/cache bundleRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_android/files/UnityCache/Shared
+11-09 07:39:18.879 18184 18237 I TlwCn   : data pack version.txt = [v1.1-20261108]
+11-09 07:39:22.760 18184 18237 I TlwCn   : marker written: /data/user/0/jp.goodsmile.touhoulostwordglobal_android/files/tlw_cn/installed.txt = v1.1-20261108
+11-09 07:39:22.761 18184 18237 I TlwCn   : extract done: entries=430 seen=430 master=84 bundles=345 bytes=445234854 elapsedMs=3955 version=v1.1-20261108
+11-09 07:39:22.825 18184 18184 I TlwCn   : no_autolaunch hook: stay on done screen
+11-09 07:39:33.193   546   546 I adbd    : adbd service requested 'shell,v2:export ANDROID_LOG_TAGS=''; exec logcat '-d' '-v' 'time' '-s' 'TlwCn:V''
