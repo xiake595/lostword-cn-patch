@@ -23,23 +23,29 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
  * 东方归言录（国际服 1.57.0 重打包版）首启汉化资源安装器。
  *
- * <p><b>为什么需要它</b>：汉化补丁（GitHub xiake595/lostword-cn-patch，lwlocal.zip，约 445 MB /
- * 430 个文件）必须出现在游戏自己的数据目录里，游戏才不会去下载国际服原始资源。原来的做法是用
+ * <p><b>为什么需要它</b>：汉化补丁（GitHub xiake595/lostword-cn-patch，lwlocal.zip，约 418 MB /
+ * 761 个条目）必须出现在游戏自己的数据目录里，游戏才不会去下载国际服原始资源。原来的做法是用
  * root 版 apply.sh 或 LSPatch 模块在首次启动前把文件 push 进去；本集成 APK 把整包以
  * assets/lwlocal.zip 内置，由本 Activity 在游戏进程内、Unity 启动之前完成解包，因此不需要
  * root，也不需要游戏先联网。</p>
@@ -53,7 +59,7 @@ import java.util.zip.ZipInputStream;
  *   lwlocal/version.txt                 -&gt; 内容作为版本标记写进 getFilesDir()/tlw_cn/installed.txt
  *   lwlocal/master/manifest.json        -&gt; getFilesDir()/cache/manifest.json（补丁自身的构建报告；
  *                                          v1.0 apply.sh 与 LwLocal v1.3 都按「master/ 下任意不带 /
- *                                          的条目」原样写入 cache，验收时 cache 应有 84 个文件）
+ *                                          的条目」原样写入 cache，v1.4 验收时应有 70 张表）
  * </pre>
  * 只有 __data，没有 __info；不做 CRC 之外的校验；不删除旧文件（按 hash 命名的旧缓存无害）。</p>
  *
@@ -83,7 +89,7 @@ public class CnSetupActivity extends Activity {
     /** 游戏真正的启动 Activity（Unity + Firebase）。 */
     private static final String GAME_ACTIVITY = "com.google.firebase.MessagingUnityPlayerActivity";
 
-    /** build-cn.ps1 内置的汉化数据包（STORED，约 445 MB）。 */
+    /** build-cn.ps1 内置的汉化数据包（STORED，约 361 MB）。 */
     private static final String ASSET_ZIP = "lwlocal.zip";
 
     private static final String ENTRY_VERSION = "lwlocal/version.txt";
@@ -94,9 +100,16 @@ public class CnSetupActivity extends Activity {
     private static final String PREFIX_BUNDLES = "lwlocal/bundles/";
     private static final String MANIFEST_NAME = "manifest.json";
 
-    /** zip 条目总数 / 解压后总字节数（来自数据包统计，仅用于进度百分比与文案兜底）。 */
-    private static final int EXPECTED_ENTRIES = 430;
-    private static final long EXPECTED_BYTES = 445234868L;
+    /**
+     * zip 条目总数 / 解压后总字节数（来自数据包统计，仅用于进度百分比与文案兜底）。
+     *
+     * <p>v1.4 数据包：761 个条目 = 345 个 {@code __data} + 345 个 {@code __info}
+     * + 70 张主表 + {@code lwlocal/version.txt}，未压缩合计 438,036,025 B。
+     * 这个数字只用于「进度条上限」和「条目被截断」的兜底判断，
+     * 真正的完整性以解包结果（entries &gt; 0 且每个条目都写成功）为准。</p>
+     */
+    private static final int EXPECTED_ENTRIES = 761;
+    private static final long EXPECTED_BYTES = 438036025L;
 
     /** 1 MiB 读写缓冲（需求指定）。 */
     private static final int BUFFER_SIZE = 1024 * 1024;
@@ -107,6 +120,21 @@ public class CnSetupActivity extends Activity {
     private static final String MARKER_NAME = "installed.txt";
     private static final String HOOK_SKIP = "skip_extract";
     private static final String HOOK_NO_AUTO = "no_autolaunch";
+
+    /**
+     * 上一次安装写进 {@code files/cache} 的主表清单（一行一个文件名）。
+     *
+     * <p>存在的意义：数据包的 master 数量是会变的（v1.3 是 84 张，v1.4 砍到 70 张）。
+     * 安装器只覆盖不删除的话，被砍掉的那批旧表会一直留在 cache 里，游戏用新版本代码去读
+     * 旧结构的数据 → 典型表现就是商店面板 {@code ShopCategoryToggle.UpdateToggle()}
+     * 抛 NullReferenceException、整个面板黑屏（2026-11-10 实测，见
+     * docs/TROUBLESHOOT-shop-black-screen.md）。</p>
+     *
+     * <p>所以每次安装成功后记一份清单；下次安装前，把「清单里有、但这次数据包里没有」
+     * 的条目删掉。<b>只删自己写过的</b>，游戏自己下载的表一律不碰。</p>
+     */
+    private static final String LIST_MASTER = "installed.list";
+    private static final String LIST_BUNDLE = "installed.bundles";
 
     private static final int COLOR_BG = 0xFF0E1116;
     private static final int COLOR_TEXT = 0xFFF2F5F8;
@@ -206,7 +234,7 @@ public class CnSetupActivity extends Activity {
 
         // 快路径：marker 与数据包内 version.txt 一致 -> 已经装好，立即拉起游戏，不构建界面（无闪烁）。
         // zipVersion == null 表示数据包里没找到 version.txt（或整个 assets 缺失）：此时若有 marker 就信任它，
-        // 避免老 marker 把 445 MB 数据每次启动重解一遍。
+        // 避免老 marker 把整包汉化数据每次启动重解一遍。
         if (hasMarker && (zipVersion == null || installedVersion.equals(zipVersion))) {
             diag("up-to-date: marker=" + installedVersion + " zipVersion=" + zipVersion);
             if (noAutolaunch) {
@@ -266,7 +294,7 @@ public class CnSetupActivity extends Activity {
      * 快速探测 assets/lwlocal.zip：是否存在、version.txt 是什么。
      *
      * <p>version.txt 正常情况下是 zip 的第一个条目；这里仍然做了「最多 16 个条目 / 最多读 2 MB」的
-     * 上限，防止有人重新打包后 version.txt 排在很后面时，快路径为了探测版本先扫掉整个 445 MB。</p>
+     * 上限，防止有人重新打包后 version.txt 排在很后面时，快路径为了探测版本先扫掉整包。</p>
      */
     private void probeAsset() {
         zipPresent = false;
@@ -289,7 +317,7 @@ public class CnSetupActivity extends Activity {
                     probeVersion = readTextEntry(zin, 4096).trim();
                     break;
                 }
-                // version.txt 正常是第一条；这里做兜底扫描，但绝不为了探测版本把 445 MB 读一遍：
+                // version.txt 正常是第一条；这里做兜底扫描，但绝不为了探测版本把整包读一遍：
                 // 累计读超过 2 MB 或条目数超过 16 就直接放弃（快路径回退成「信任已有 marker」）。
                 int r;
                 while ((r = zin.read(tmp)) != -1) {
@@ -502,8 +530,12 @@ public class CnSetupActivity extends Activity {
             int masterFiles = 0;
             int bundleFiles = 0;
             int cacheInfoFiles = 0;
+            int packagedInfo = 0;
             long bytes = 0L;
             String version = null;
+            // 本次数据包里实际存在的条目名（用于跟上次的清单做差集，删掉被上游砍掉的旧表/旧包）
+            final Set<String> nowMaster = new HashSet<String>();
+            final Set<String> nowBundles = new HashSet<String>();
             try {
                 raw = getAssets().open(ASSET_ZIP);
                 zin = new ZipInputStream(new BufferedInputStream(raw, 128 * 1024));
@@ -529,7 +561,7 @@ public class CnSetupActivity extends Activity {
                             final String rest = name.substring(PREFIX_MASTER.length());
                             // 参考实现（v1.0 apply.sh 的 `cp master/* $CACHE/` 与 LwLocal v1.3 的 unzip()）都是：
                             // master/ 下任何「不带 / 的条目」原样写进 filesDir/cache/ —— 包括补丁自带的
-                            // manifest.json（补丁构建报告，非游戏数据）。不做特殊处理，验收时 cache 应有 84 个文件。
+                            // manifest.json（补丁构建报告，非游戏数据）。v1.4 是 70 张表（任务/交换所暂不汉化）。
                             if (!isSafeSegment(rest)) {
                                 Log.w(TAG, "skip unsafe master entry: " + name);
                             } else {
@@ -537,6 +569,7 @@ public class CnSetupActivity extends Activity {
                                 bytes += n;
                                 entries++;
                                 masterFiles++;
+                                nowMaster.add(rest);
                             }
                         } else if (name.startsWith(PREFIX_BUNDLES)) {
                             final String rest = name.substring(PREFIX_BUNDLES.length());
@@ -549,11 +582,20 @@ public class CnSetupActivity extends Activity {
                                 // 必须同时补 __info：Unity 的 AssetBundle 缓存只认「有 __info 的目录」，
                                 // 只有 __data、没有 __info 的条目在游戏初始化缓存时会当作垃圾清掉
                                 // （实测：真机首启后 345 个预置包里 269 个被删、其余被重新下载的英文包覆盖）。
+                                //
+                                // v1.4 数据包自己也带了 __info（345 个），但里面的 mtime 是打包时的固定值，
+                                // 与刚写出的 __data 对不上；这里仍然由安装器按 __data 的真实 mtime 重新生成，
+                                // 数据包里的那份只当参考、不落盘（见下面的 __info 分支）。
                                 writeCacheInfo(dir, dest);
                                 bytes += n;
                                 entries++;
                                 bundleFiles++;
                                 cacheInfoFiles++;
+                                nowBundles.add(parts[0] + "/" + parts[1]);
+                            } else if (parts.length == 3 && "__info".equals(parts[2])) {
+                                // 数据包自带的 __info：读掉但不落盘，避免覆盖上面按真实 mtime 生成的那份。
+                                skipEntry(zin, buffer);
+                                packagedInfo++;
                             } else {
                                 Log.w(TAG, "skip malformed bundle entry: " + name);
                             }
@@ -578,7 +620,7 @@ public class CnSetupActivity extends Activity {
             if (entries <= 0) {
                 throw new IOException("lwlocal.zip 中没有可安装的条目（资源包损坏？）");
             }
-            // 完整性检查：内置数据包固定 430 个文件（345 bundles + 83 master hash + manifest + version）。
+            // 完整性检查：v1.4 数据包固定 761 个条目（345 __data + 345 __info + 70 主表 + version.txt）。
             // 若 APK 重打包时 asset 被截断，ZipInputStream 读到条目边界会「正常」结束，必须靠条目数识别，
             // 否则会写入不完整的汉化数据 + marker，导致游戏缺资源去联网下载。
             if (seen < EXPECTED_ENTRIES) {
@@ -595,14 +637,57 @@ public class CnSetupActivity extends Activity {
                 Log.w(TAG, "version.txt missing in lwlocal.zip, marker uses fallback 'unknown'");
             }
 
-            // 关键顺序：所有目标文件写完后，最后原子写 marker，之后才允许启动游戏。
+            // 关键顺序：所有目标文件写完后，先清掉「上次写过、这次数据包里没有」的旧条目，
+            // 再原子写 marker，之后才允许启动游戏。
+            //
+            // 为什么要清：数据包的主表数量会变（v1.3 84 张 → v1.4 70 张）。只覆盖不删除时，
+            // 被上游砍掉的 14 张旧表会留在 cache 里，游戏用新代码读旧结构 → 商店面板空引用黑屏。
+            // 只删「上次安装自己写过的」（清单里的），游戏自己下载的表一律不碰。
+            final int prunedMaster = pruneStale(new File(cnDir, LIST_MASTER), nowMaster,
+                    new Pruner() {
+                        @Override
+                        public boolean remove(String name) {
+                            return deleteIfFile(new File(cacheDir, name));
+                        }
+                    });
+            final int prunedBundles = pruneStale(new File(cnDir, LIST_BUNDLE), nowBundles,
+                    new Pruner() {
+                        @Override
+                        public boolean remove(String ab) {
+                            final int slash = ab.indexOf('/');
+                            if (slash <= 0 || slash >= ab.length() - 1) {
+                                return false;
+                            }
+                            File dir = new File(new File(bundleRoot, ab.substring(0, slash)),
+                                    ab.substring(slash + 1));
+                            boolean any = deleteIfFile(new File(dir, "__data"));
+                            any |= deleteIfFile(new File(dir, "__info"));
+                            // 目录空了才删，避免误删游戏自己放进来的东西
+                            try {
+                                String[] left = dir.list();
+                                if (left != null && left.length == 0) {
+                                    dir.delete();
+                                }
+                            } catch (Throwable ignored) {
+                            }
+                            return any;
+                        }
+                    });
+            if (prunedMaster > 0 || prunedBundles > 0) {
+                diag("pruned stale entries: master=" + prunedMaster + " bundles=" + prunedBundles);
+            }
+            writeNameList(new File(cnDir, LIST_MASTER), nowMaster);
+            writeNameList(new File(cnDir, LIST_BUNDLE), nowBundles);
+
             writeMarkerAtomic(marker, version);
             sInstalledVersion = version;
             sEntryCount = entries;
             sByteCount = bytes;
             sElapsedMs = SystemClock.elapsedRealtime() - sStartElapsed;
             diag("extract done: entries=" + entries + " seen=" + seen + " master=" + masterFiles
-                    + " bundles=" + bundleFiles + " cacheInfo=" + cacheInfoFiles + " bytes=" + bytes
+                    + " bundles=" + bundleFiles + " cacheInfo=" + cacheInfoFiles
+                    + " packagedInfo=" + packagedInfo + " prunedMaster=" + prunedMaster
+                    + " prunedBundles=" + prunedBundles + " bytes=" + bytes
                     + " elapsedMs=" + sElapsedMs + " version=" + version);
             ok = true;
         } catch (Throwable t) {
@@ -642,6 +727,126 @@ public class CnSetupActivity extends Activity {
             closeQuietly(fos);
         }
         return written;
+    }
+
+    /**
+     * 读掉一个条目但不落盘（v1.4 数据包里自带的 {@code __info} 用这个跳过）。
+     *
+     * <p>ZipInputStream 必须把当前条目的数据流读完才能走到下一个条目，
+     * 所以不能直接 continue，得把字节读掉丢掉。</p>
+     */
+    private static void skipEntry(ZipInputStream zin, byte[] buffer) throws IOException {
+        while (zin.read(buffer) != -1) {
+            // discard
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // 旧条目清理（installed.list / installed.bundles）
+    // ---------------------------------------------------------------------
+
+    /** 单个旧条目的删除动作；返回是否真的删掉了东西。 */
+    private interface Pruner {
+        boolean remove(String name);
+    }
+
+    /**
+     * 按上次的清单清掉这次数据包里已经不存在的条目。
+     *
+     * @return 实际删除的条目数
+     */
+    private static int pruneStale(File listFile, Set<String> nowPresent, Pruner pruner) {
+        List<String> old = readNameList(listFile);
+        if (old.isEmpty()) {
+            return 0;
+        }
+        int removed = 0;
+        for (String name : old) {
+            if (name == null || name.length() == 0 || nowPresent.contains(name)) {
+                continue;
+            }
+            try {
+                if (pruner.remove(name)) {
+                    removed++;
+                    Log.i(TAG, "pruned stale entry: " + name);
+                }
+            } catch (Throwable t) {
+                // 删不掉不算失败：留着最多是旧数据，比中断安装好。
+                Log.w(TAG, "prune failed: " + name + " / " + t);
+            }
+        }
+        return removed;
+    }
+
+    /** 读一行一个名字的清单；不存在/读失败返回空表。 */
+    private static List<String> readNameList(File f) {
+        List<String> out = new ArrayList<String>();
+        if (f == null || !f.isFile()) {
+            return out;
+        }
+        BufferedReader r = null;
+        try {
+            r = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+            String line;
+            while ((line = r.readLine()) != null) {
+                line = line.trim();
+                if (line.length() > 0) {
+                    out.add(line);
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "read list " + f + " failed: " + t);
+        } finally {
+            closeQuietly(r);
+        }
+        return out;
+    }
+
+    /** 原子写清单（tmp → rename）；失败只记日志，不影响安装结果。 */
+    private static void writeNameList(File f, Set<String> names) {
+        if (f == null) {
+            return;
+        }
+        File tmp = new File(f.getParentFile(), f.getName() + ".tmp");
+        FileOutputStream fos = null;
+        try {
+            StringBuilder sb = new StringBuilder(names.size() * 40);
+            for (String n : names) {
+                sb.append(n).append('\n');
+            }
+            fos = new FileOutputStream(tmp, false);
+            fos.write(sb.toString().getBytes("UTF-8"));
+            fos.flush();
+            try {
+                fos.getFD().sync();
+            } catch (Throwable ignored) {
+            }
+            closeQuietly(fos);
+            fos = null;
+            if (!tmp.renameTo(f)) {
+                if (f.isFile()) {
+                    f.delete();
+                }
+                if (!tmp.renameTo(f)) {
+                    Log.w(TAG, "cannot write list " + f);
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "write list " + f + " failed: " + t);
+        } finally {
+            closeQuietly(fos);
+        }
+    }
+
+    /** 是普通文件才删；返回是否删掉了。 */
+    private static boolean deleteIfFile(File f) {
+        try {
+            if (f != null && f.isFile() && f.delete()) {
+                return true;
+            }
+        } catch (Throwable ignored) {
+        }
+        return false;
     }
 
     /**
@@ -729,7 +934,7 @@ public class CnSetupActivity extends Activity {
         addRow(titleView, LinearLayout.LayoutParams.WRAP_CONTENT, 0);
 
         statusView = new TextView(this);
-        statusView.setText("首次启动正在安装汉化资源（约 445 MB），请勿退出…");
+        statusView.setText("首次启动正在安装汉化资源（约 418 MB），请勿退出…");
         statusView.setTextColor(COLOR_SUB);
         statusView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15.0f);
         statusView.setGravity(Gravity.CENTER);
@@ -757,7 +962,7 @@ public class CnSetupActivity extends Activity {
         addRow(percentView, LinearLayout.LayoutParams.WRAP_CONTENT, dp(8));
 
         detailView = new TextView(this);
-        detailView.setText("文件 0 / " + EXPECTED_ENTRIES + " · 0.0 MB / 约 445.2 MB");
+        detailView.setText("文件 0 / " + EXPECTED_ENTRIES + " · 0.0 MB / 约 " + (EXPECTED_BYTES >> 20) + " MB");
         detailView.setTextColor(COLOR_SUB);
         detailView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13.0f);
         detailView.setGravity(Gravity.CENTER);
@@ -820,8 +1025,8 @@ public class CnSetupActivity extends Activity {
         progressBar.setMax(EXPECTED_ENTRIES);
         progressBar.setProgress(0);
         percentView.setText("0%");
-        detailView.setText("文件 0 / " + EXPECTED_ENTRIES + " · 0.0 MB / 约 445.2 MB");
-        statusView.setText("首次启动正在安装汉化资源（约 445 MB），请勿退出…");
+        detailView.setText("文件 0 / " + EXPECTED_ENTRIES + " · 0.0 MB / 约 " + (EXPECTED_BYTES >> 20) + " MB");
+        statusView.setText("首次启动正在安装汉化资源（约 418 MB），请勿退出…");
         hintView.setText("首次安装约需 1~3 分钟，完成后会自动进入游戏。\n安装过程中请勿退出应用。");
         synchronized (SESSION_LOCK) {
             sFailed = false;

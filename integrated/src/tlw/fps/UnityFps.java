@@ -32,7 +32,7 @@ final class UnityFps {
     static final String LIB = "libunity.so";
 
     /** offset tables verified against real builds */
-    private static final String[] KNOWN_VER = {"1.57.0", "1.71.1"};
+    private static final String[] KNOWN_VER = {"1.57.0", "1.58.0", "1.71.1"};
     private static final long OFF_TFR_KNOWN = 0x199cc54L;
 
     private final Context ctx;
