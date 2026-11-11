@@ -1,0 +1,6 @@
+--------- beginning of main
+11-11 14:56:55.704 31646 31646 I TlwFps  : installed
+11-11 14:56:55.916 31646 31646 I TlwFps  : system overlay attached 174x174
+11-11 14:56:55.916 31646 31646 I TlwFps  : screen 2670x1200
+11-11 14:56:55.937 31646 31646 I TlwFps  : custom icon loaded 253x253
+11-11 14:56:56.371 31646  8701 I TlwFps  : attach base=0x7563ce3000 views=1 tfr=0x199cc54 writable=true via 缓存 1.58.0

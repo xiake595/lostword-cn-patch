@@ -84,3 +84,10 @@ I TlwFps: attach base=0x755fee6000 views=1 tfr=0x199cc54 writable=true via 内�
 - 共存包无法覆盖官方客户端（包名/签名都不同），反之亦然；账号靠引继，本地数据不迁移。
 - v1.4 的任务/交换所主表保持英文（上游设计）；1.58 新增 `another`/`event78` 未翻译。
 - 若游戏再升级（versionCode 变化），需拉新 base/split + 上游新数据包，并把 `-GameVersion` 改到新版本；`UnityFps` 的 `KNOWN_VER` 也要确认新版本在后。
+
+## 七、证据
+
+- docs/screenshots-1580-coexist/01-coexist-title-1.58.0.png：共存版标题界面（Version 1.58.0、FPS 悬浮球 120）
+- docs/screenshots-1580-coexist/02-first-launch-logcat.txt：首启解包日志（entries=416 seen=761 master=70 bundles=345，24 秒）
+- docs/screenshots-1580-coexist/03-fps-logcat.txt：FPS 附着日志（via 内置 1.58.0，tfr=0x199cc54）
+- docs/screenshots-1580-coexist/04-second-launch-fastpath-logcat.txt：二次启动快路径日志（up-to-date）

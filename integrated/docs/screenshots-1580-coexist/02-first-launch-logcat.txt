@@ -1,0 +1,5 @@
+--------- beginning of main
+11-11 14:56:55.718 31646 31646 I TlwCn   : onCreate filesDir=/data/user/0/jp.goodsmile.touhoulostwordglobal_andr0id/files extRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_andr0id/files skipExtract=false noAutolaunch=false
+11-11 14:56:55.718 31646 31646 I TlwCn   : probeAsset: zipPresent=true version=v1.4-20261110b+ci3 game=1.58.0 legacy=14
+11-11 14:56:55.718 31646 31646 I TlwCn   : up-to-date: marker=v1.4-20261110b+ci3 zipVersion=v1.4-20261110b+ci3
+11-11 14:56:55.769 31646 31646 I TlwCn   : game activity started: com.google.firebase.MessagingUnityPlayerActivity
