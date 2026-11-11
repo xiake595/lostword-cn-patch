@@ -68,6 +68,8 @@ public final class CacheRepair {
         File cnDir = new File(app.getFilesDir(), "tlw_cn");
         delete(new File(cnDir, "installed.txt"));
         delete(new File(cnDir, "installed.txt.tmp"));
+        // 「还原官方」模式标记必须一起清掉，否则重启后 CnSetupActivity 会继续跳过解包
+        delete(new File(cnDir, "restore_mode"));
         // 调试钩子必须一起清掉，否则重启后 CnSetupActivity 会跳过解包
         delete(new File(cnDir, "skip_extract"));
         delete(new File(cnDir, "no_autolaunch"));

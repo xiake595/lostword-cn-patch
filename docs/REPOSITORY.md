@@ -24,6 +24,8 @@ transfer 是交接副本，不重复收录整套项目。旧 README/安装教程
 
 独立 FPS 与合并版均通过完整构建（javac、D8、AXML 编辑、repack、zipalign、apksigner），输入来自本机仓库外的官方 APK、v1.3 汉化数据、R8 与既有本地签名；构建产物留在忽略目录，不随本次提交上传。合并版核对包名、1.57.0/6728、启动 Activity 与 arm64 ABI；两版的原始 resources.arsc 与游戏 dex 均作保留检查。另检查 Python/PowerShell 语法、当前文档本地链接及提交文件类型。本次未重新进行设备安装或游戏内验证。
 
+2026-11-11 补充：合并版升级到 1.58.0 / 7016 + v1.4 数据，并新增共存版构建（`-Pkg …_andr0id`、等长改应用名、独立 authority）、安装器 legacy 旧表清理与游戏版本校验、悬浮窗「还原官方缓存」和解包失败「跳过汉化」兜底。共存版已在 HyperOS 真机完成安装与首启解包验证（`entries=416 seen=761 master=70 bundles=345`，24 秒；二次启动快路径；FPS `via 内置 1.58.0`；无 FATAL），登录与资源下载留给使用者手动完成，详见 [共存版 ci3 记录](../integrated/docs/BUILD-1.58.0-coexist-ci3.md)。
+
 ## GitHub About 描述
 
 建议描述：`东方归言录：简体中文汉化（cn-patch）、帧率解锁（unlock-FPS）与合并版构建源码、脚本及文档`。

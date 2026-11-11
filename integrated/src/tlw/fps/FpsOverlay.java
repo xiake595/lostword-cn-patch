@@ -400,6 +400,32 @@ final class FpsOverlay {
         }));
         p.addView(repair);
 
+        // ---- 还原官方（黑屏 / 进不去主界面时的兜底） ----
+        // 说明：如果装完汉化后进游戏黑屏（典型是旧版数据包/旧安装器残留的主导表结构与新版本
+        // 不匹配），点这里会删掉本安装器写过的汉化主表/资源包，并跳过解包直接重启游戏，
+        // 让游戏重新下载官方数据；之后想恢复汉化再点上面的「缓存修复」。
+        TextView restore = new TextView(ctx);
+        restore.setText("还原官方缓存（黑屏/进不去时点这里）");
+        restore.setTextColor(0xFFFFCDD2);
+        restore.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12);
+        restore.setGravity(Gravity.CENTER);
+        restore.setPadding(dp(6), dp(10), dp(6), dp(10));
+        restore.setBackground(round(0x33F44336, dp(10), 0x55EF9A9A, dp(1)));
+        LinearLayout.LayoutParams restlp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        restlp.topMargin = dp(8);
+        restore.setLayoutParams(restlp);
+        restore.setOnClickListener(click(new Runnable() {
+            @Override public void run() {
+                if (status != null) {
+                    status.setText("正在还原官方资源并重启…");
+                }
+                closePanel();
+                tlw.cn.CacheRestore.perform(ctx);
+            }
+        }));
+        p.addView(restore);
+
         View line = new View(ctx);
         line.setBackgroundColor(0x33FFFFFF);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(

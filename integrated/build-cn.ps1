@@ -1,29 +1,43 @@
-﻿# build-cn.ps1 -- build the integrated Touhou LostWord (global 1.57.0) APK
+# build-cn.ps1 -- build the integrated Touhou LostWord APK
 #
 # Content of the ONE apk:
 #   * FPS unlock overlay          (src\tlw\fps, ContentProvider boot)
-#   * CN localization data v1.3   (assets\lwlocal.zip -> unpacked on first run
-#                                  by tlw.cn.CnSetupActivity)
+#   * CN localization data v1.4   (assets\lwlocal.zip -> unpacked on first run
+#                                  by tlw.cn.CnSetupActivity; baseline 1.58.0 / 7016)
+#   * 兜底：安装器旧表清理 / 版本校验，悬浮窗「还原官方缓存」与「缓存修复」
 #
 # File-level pipeline, exactly like build.ps1 of the FPS project:
-#   - original package name / versionCode / application label are kept
-#     (resources.arsc is never re-encoded)
+#   - original package name / versionCode / application label are kept by default
+#     (resources.arsc is never re-encoded); pass -Pkg for an equal-length package
+#     rename (coexist build, same name as the fps-unlock author's coexist APK)
 #   - AndroidManifest.xml is edited as compiled AXML
 #   - every other entry keeps its original compression method
 #   - lib/arm64-v8a/* is merged in from the ABI split -> one standalone APK
 #
 # Usage: pwsh -File build-cn.ps1            (or powershell -ExecutionPolicy Bypass -File ...)
+#
+# Coexist build (installs next to the official client, separate app data):
+#   pwsh -File build-cn.ps1 -Pkg "jp.goodsmile.touhoulostwordglobal_andr0id" `
+#        -Label "TLW CN FPS Mod!" -Authority "tlw.fps.cn.coexist" `
+#        -Out "out\TLW-global-1.58.0-cn-fps-coexist.apk"
 
 param(
-    [string]$Out          = "out\TLW-global-1.57.0-cn-fps.apk",
-    [string]$BaseApk      = "apk\base.apk",
-    [string]$SplitApk     = "apk\split_arm64.apk",
+    [string]$Out          = "out\TLW-global-1.58.0-cn-fps.apk",
+    [string]$BaseApk      = "apk\1580\base.apk",
+    [string]$SplitApk     = "apk\1580\split_arm64.apk",
     [string]$CnZip        = "assets\lwlocal.zip",
     [string]$Icon         = "assets\tlw_icon.png",
     [string]$OldActivity  = "com.google.firebase.MessagingUnityPlayerActivity",
     [string]$SetupActivity = "tlw.cn.CnSetupActivity",
     [string]$Authority    = "tlw.fps.cn",
-    [string]$CnVersion    = "v1.3-20261109b+ci1",
+    [string]$CnVersion    = "v1.4-20261110b+ci3",
+    [string]$GameVersion  = "1.58.0",
+    [string]$LegacyList   = "assets\tlw_cn_legacy.txt",
+    # coexist / 共存版：等长改包名（resources.arsc 只做等长字节替换，不重编码）
+    [string]$OldPkg       = "jp.goodsmile.touhoulostwordglobal_android",
+    [string]$Pkg          = "",
+    [string]$OldLabel     = "Touhou LostWord",
+    [string]$Label        = "",
     # Toolchain overrides (auto-detected when empty). Lets the folder be moved to
     # another machine without editing this script.
     [string]$JdkHome      = "",
@@ -124,6 +138,17 @@ foreach ($p in @($java, $javac, $androidJar, $r8, $ks,
     if (-not (Test-Path $p)) { throw "missing required tool: $p" }
 }
 if (-not (Test-Path $CnZip)) { throw "CN data zip not found: $CnZip" }
+if (-not (Test-Path $LegacyList)) { throw "legacy master list not found: $LegacyList" }
+if ($Pkg -ne "") {
+    if ($Pkg.Length -ne $OldPkg.Length) {
+        throw "-Pkg must be exactly $($OldPkg.Length) characters (byte-for-byte patch), got $($Pkg.Length)"
+    }
+    if ($Label -ne "" -and
+        [Text.Encoding]::UTF8.GetByteCount($Label) -ne [Text.Encoding]::UTF8.GetByteCount($OldLabel)) {
+        throw ("-Label must be $([Text.Encoding]::UTF8.GetByteCount($OldLabel)) UTF-8 bytes " +
+               "(byte-for-byte patch), got $([Text.Encoding]::UTF8.GetByteCount($Label))")
+    }
+}
 Write-Host "      JDK        : $JdkHome"
 Write-Host "      SDK        : $SdkRoot"
 Write-Host "      build-tools: $(Split-Path -Leaf $bt)"
@@ -137,7 +162,13 @@ $verFile = "build\tlw_cn.version"
 New-Item -ItemType Directory -Force -Path "build" | Out-Null
 [System.IO.File]::WriteAllText((Join-Path $root $verFile), $CnVersion + "`n",
     (New-Object System.Text.UTF8Encoding($false)))
+# 数据包适配的游戏版本：安装器会拿它和已安装客户端的 versionName 比对，
+# 不一致就拒绝解包（避免旧表写进新客户端 → 商店/主界面黑屏）。
+$gameFile = "build\tlw_cn.game"
+[System.IO.File]::WriteAllText((Join-Path $root $gameFile), $GameVersion + "`n",
+    (New-Object System.Text.UTF8Encoding($false)))
 Write-Host "      CN version: $CnVersion -> assets/tlw_cn.version"
+Write-Host "      game ver  : $GameVersion -> assets/tlw_cn.game"
 
 Step 1 "javac (src\tlw\fps + src\tlw\cn)"
 Remove-Item -Recurse -Force "build\classes", "build\dexout" -ErrorAction SilentlyContinue
@@ -185,12 +216,38 @@ Py "tools\axml.py" set-launcher "build\AndroidManifest.h.xml" "build\AndroidMani
 if ($LASTEXITCODE -ne 0) { throw "launcher switch failed" }
 Write-Host "      manifest: $((Get-Item 'build\AndroidManifest.xml').Length) bytes"
 
+# 3b) coexist：等长改包名/应用名（字节级替换，不重编码 resources.arsc）。
+#     clone.py 只改两处：AndroidManifest.xml 的 package（UTF-16LE）与
+#     resources.arsc 的 ResTable_package.name（UTF-16LE，固定 128 char16）；
+#     可选改 resources.arsc 里的 application label（UTF-8）。长度不等会直接报错。
+$manifestForRepack = "build\AndroidManifest.xml"
+$arscForRepack = $null
+if ($Pkg -ne "") {
+    Step "3b" "clone package name (coexist build)"
+    $arscOrig = "build\resources.orig.arsc"
+    Py -c 'import zipfile,sys;open(sys.argv[2],"wb").write(zipfile.ZipFile(sys.argv[1]).read("resources.arsc"))' $BaseApk $arscOrig
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $arscOrig)) { throw "cannot read resources.arsc from $BaseApk" }
+    $arscForRepack = "build\resources.clone.arsc"
+    $cloneArgs = @("tools\clone.py", "build\AndroidManifest.xml", "build\AndroidManifest.clone.xml",
+                   $arscOrig, $arscForRepack, $OldPkg, $Pkg)
+    if ($Label -ne "") { $cloneArgs += @($OldLabel, $Label) }
+    Py @cloneArgs
+    if ($LASTEXITCODE -ne 0) { throw "clone package failed" }
+    $manifestForRepack = "build\AndroidManifest.clone.xml"
+    Write-Host "      package: $OldPkg -> $Pkg"
+    if ($Label -ne "") { Write-Host "      label  : $OldLabel -> $Label" }
+}
+
 Step 4 "repack (base + split libs + manifest + dex + icon + lwlocal.zip)"
 Remove-Item "build\unaligned.apk" -ErrorAction SilentlyContinue
-Py "tools\repack.py" $BaseApk $SplitApk "build\AndroidManifest.xml" `
-    "build\dexout\classes.dex" "build\unaligned.apk" $Icon `
-    -asset-store "assets/lwlocal.zip=$CnZip" `
-    -asset "assets/tlw_cn.version=$verFile"
+$repackArgs = @($BaseApk, $SplitApk, $manifestForRepack,
+                "build\dexout\classes.dex", "build\unaligned.apk", $Icon,
+                "-asset-store", "assets/lwlocal.zip=$CnZip",
+                "-asset", "assets/tlw_cn.version=$verFile",
+                "-asset", "assets/tlw_cn.game=$gameFile",
+                "-asset", "assets/tlw_cn_legacy.txt=$LegacyList")
+if ($arscForRepack) { $repackArgs += @("-arsc", $arscForRepack) }
+Py "tools\repack.py" @repackArgs
 if ($LASTEXITCODE -ne 0) { throw "repack failed" }
 $mb = [math]::Round((Get-Item "build\unaligned.apk").Length / 1MB, 1)
 Write-Host "      unaligned: $mb MB"
@@ -213,8 +270,16 @@ if (-not $KeepIntermediate) { Remove-Item "build\aligned.apk" -ErrorAction Silen
 Step 7 "verify"
 & (Join-Path $bt "apksigner.bat") verify --print-certs $Out | Select-Object -First 2 | ForEach-Object { Write-Host "      $_" }
 $aapt = Join-Path $bt "aapt2.exe"
-& $aapt dump badging $Out 2>&1 | Select-String "^package:|^application-label:|^launchable-activity:|^native-code:|^sdkVersion|^targetSdkVersion" |
+$badging = & $aapt dump badging $Out 2>&1
+$badging | Select-String "^package:|^application-label:|^launchable-activity:|^native-code:|^sdkVersion|^targetSdkVersion" |
     ForEach-Object { Write-Host "      $($_.Line)" }
+$expectedPkg = if ($Pkg -ne "") { $Pkg } else { $OldPkg }
+if (($badging -join "`n") -notmatch [regex]::Escape("name='$expectedPkg' versionCode")) {
+    throw "package name check failed: expected $expectedPkg"
+}
+if ($Label -ne "" -and (($badging -join "`n") -notmatch [regex]::Escape("application-label:'$Label'"))) {
+    throw "application label check failed: expected $Label"
+}
 
 $mb = [math]::Round((Get-Item $Out).Length / 1MB, 1)
 $sw.Stop()

@@ -2,7 +2,7 @@
 
 国际服简体中文汉化、独立帧率解锁，以及两者合并的 APK 构建项目。仓库按功能分为三个目录，保存源码、脚本、必要图标与技术文档。
 
-当前国际服适配基线为 **1.58.0 / versionCode 7016 / arm64-v8a**，包名 `jp.goodsmile.touhoulostwordglobal_android`；**1.57.0 / 6728** 亦可构建（替换 `apk/` 下的 base 与 split，步骤见 [换数据包检查清单](integrated/docs/CHECKLIST-new-datapack.md)）。FPS 悬浮窗另保留日服 **1.71.1** 的构建入口；汉化与合并版仅针对国际服。
+当前国际服适配基线为 **1.58.0 / versionCode 7016 / arm64-v8a**，包名 `jp.goodsmile.touhoulostwordglobal_android`；**1.57.0 / 6728** 亦可构建（替换 `apk/` 下的 base 与 split，步骤见 [换数据包检查清单](integrated/docs/CHECKLIST-new-datapack.md)）。FPS 悬浮窗另保留日服 **1.71.1** 的构建入口；汉化与合并版仅针对国际服。合并版还支持**等长改名的共存版**（`-Pkg jp.goodsmile.touhoulostwordglobal_andr0id`，可与官方客户端并存），并带旧表清理、版本校验和「还原官方缓存」兜底，见 [共存版 ci3 记录](integrated/docs/BUILD-1.58.0-coexist-ci3.md)。
 
 ## 目录与选择
 
@@ -34,7 +34,8 @@
 ## 当前行为与限制
 
 - 合并版首启解包，后续按版本标记快速进入游戏；升级标记会触发重新安装汉化数据。修复了缺少 Unity `__info` 导致中文缓存被丢弃的问题，并提供悬浮窗“缓存修复”按钮。
-- 安装器会记录本次写入的主表与资源包清单（`files/tlw_cn/installed.list`、`installed.bundles`），下次安装时清掉「上次写过、但新数据包已不含」的条目；只删自己写过的，游戏自行下载的表不受影响。这一项修复了 v1.3→v1.4 主表由 84 张减到 70 张时、残留旧表导致商店面板 `NullReferenceException` 黑屏的问题，详见 [故障排查](integrated/docs/TROUBLESHOOT-shop-black-screen.md)。
+- 安装器会记录本次写入的主表与资源包清单（`files/tlw_cn/installed.list`、`installed.bundles`），下次安装时清掉「上次写过、但新数据包已不含」的条目；只删自己写过的，游戏自行下载的表不受影响。对更早的 v1.3/ci1 装机（没有清单）用内置 `assets/tlw_cn_legacy.txt` 兜底清理；数据包还会写入适配的 `-GameVersion`，与客户端 `versionName` 不符时拒绝解包。这一组修复了 v1.3→v1.4 主表由 84 张减到 70 张时、残留旧表导致商店面板 `NullReferenceException` 黑屏的问题，详见 [故障排查](integrated/docs/TROUBLESHOOT-shop-black-screen.md)。
+- 悬浮窗新增「还原官方缓存」兜底：黑屏/进不去主界面时删掉安装器写过的汉化数据并跳过解包重启，由游戏重下官方数据；想恢复汉化再点「缓存修复」。解包失败界面另提供「跳过汉化，直接启动游戏」。
 - FPS 悬浮窗支持设置目标帧率、还原默认、隐藏与拖动；实际帧率受屏幕刷新率、vsync、温控和设备性能影响。
 - 汉化覆盖剧情、部分 UI、字体及主数据表，仍有任务说明、派遣界面等未翻译内容。定位报告见 [派遣 UI 分析](cn-patch/docs/LOCALIZATION-errand-ui.md)，该报告不代表已完成翻译。
 - v1.4 起**任务（课题）与交换所/商店的主表暂不汉化**，界面保持英文，以避开版本更新时的表结构变动；1.58 新增的 `another`、`event78` 两个剧情篇章尚未翻译。

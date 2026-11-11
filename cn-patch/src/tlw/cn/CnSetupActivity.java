@@ -122,6 +122,21 @@ public class CnSetupActivity extends Activity {
     private static final String HOOK_NO_AUTO = "no_autolaunch";
 
     /**
+     * 「还原官方」模式标记（由 {@link CacheRestore} 写入、{@link CacheRepair} 清除）。
+     *
+     * <p>存在时安装器不解包、直接启动游戏：汉化数据已被删掉，游戏会按官方逻辑重新下载
+     * 主表和资源包。这是给「装完汉化后主界面黑屏/进不去」留的兜底——先保证能进游戏，
+     * 再点悬浮窗「缓存修复」重新装汉化。</p>
+     */
+    private static final String RESTORE_NAME = "restore_mode";
+
+    /** 构建时写入的「适配游戏版本」（build-cn.ps1 的 -GameVersion）。版本不符时拒绝解包，避免黑屏。 */
+    private static final String ASSET_GAME = "tlw_cn.game";
+
+    /** 旧版安装器（v1.3 / ci1，当时没有 installed.list）写过、v1.4 起不再包含的主表文件名清单。 */
+    private static final String ASSET_LEGACY = "tlw_cn_legacy.txt";
+
+    /**
      * 上一次安装写进 {@code files/cache} 的主表清单（一行一个文件名）。
      *
      * <p>存在的意义：数据包的 master 数量是会变的（v1.3 是 84 张，v1.4 砍到 70 张）。
@@ -170,6 +185,7 @@ public class CnSetupActivity extends Activity {
     private TextView errorView;
     private TextView hintView;
     private Button retryButton;
+    private Button skipButton;
     private ProgressBar progressBar;
 
     private int pad;
@@ -177,6 +193,10 @@ public class CnSetupActivity extends Activity {
     private boolean tickerStopped = true;
     private boolean doneUiShown;
     private boolean retryLaunchOnly;
+    /** 构建时写入的适配游戏版本（assets/tlw_cn.game），可能为 null（旧包没带）。 */
+    private String probeGame;
+    /** 旧版安装器写过、本版数据包已不再包含的主表文件名（assets/tlw_cn_legacy.txt）。 */
+    private List<String> legacyNames;
     private volatile File diagLogFile;
 
     /** zip 是否存在（getAssets().open 成功过）与快速探测到的 version.txt 内容。 */
@@ -219,6 +239,30 @@ public class CnSetupActivity extends Activity {
         final boolean hasMarker = installedVersion != null && installedVersion.length() > 0;
         probeAsset();
         final String zipVersion = probeVersion;
+
+        // 兜底 0：「还原官方」模式。CacheRestore 会删掉汉化数据并写下这个标记，
+        // 这里跳过解包直接启动游戏，让游戏重新下载官方主表/资源包。
+        if (new File(cnDir, RESTORE_NAME).isFile()) {
+            diag("restore mode: skip extraction, launch game with official data");
+            if (noAutolaunch) {
+                buildUi();
+                showInstalledUi(installedVersion, "「还原官方」模式：本次未自动启动游戏。");
+            } else {
+                launchGame();
+            }
+            return;
+        }
+
+        // 兜底 1：数据包与已安装游戏版本不匹配时拒绝解包。
+        // 旧数据包写进新版本客户端 = 主表结构错位（商店/主界面 NullReferenceException 黑屏）。
+        final String gameVersion = currentVersionName();
+        if (probeGame != null && gameVersion != null && !probeGame.equals(gameVersion)) {
+            retryLaunchOnly = false;
+            buildUi();
+            showFailureUi("内置汉化数据适配游戏 " + probeGame + "，当前安装的是 " + gameVersion
+                    + "。已停止安装以避免黑屏；请使用与该游戏版本对应的整合包。");
+            return;
+        }
 
         // 钩子 1：skip_extract —— 视为已安装，直接启动游戏（跳过整个解包）。
         if (skipExtract) {
@@ -347,7 +391,44 @@ public class CnSetupActivity extends Activity {
         if (releaseVersion != null) {
             probeVersion = releaseVersion;
         }
-        diag("probeAsset: zipPresent=" + zipPresent + " version=" + probeVersion);
+        probeGame = readAssetText(ASSET_GAME, 64);
+        legacyNames = readLegacyList();
+        diag("probeAsset: zipPresent=" + zipPresent + " version=" + probeVersion
+                + " game=" + probeGame + " legacy=" + (legacyNames == null ? 0 : legacyNames.size()));
+    }
+
+    /** 读 assets/tlw_cn_legacy.txt（一行一个旧版主表文件名）；不存在/读失败返回空表。 */
+    private List<String> readLegacyList() {
+        List<String> out = new ArrayList<String>();
+        InputStream in = null;
+        BufferedReader reader = null;
+        try {
+            in = getAssets().open(ASSET_LEGACY);
+            reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.length() > 0 && isSafeSegment(line)) {
+                    out.add(line);
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "read assets/" + ASSET_LEGACY + " failed: " + t);
+        } finally {
+            closeQuietly(reader);
+            closeQuietly(in);
+        }
+        return out;
+    }
+
+    /** 当前已安装客户端的 versionName；读不到返回 null。 */
+    private String currentVersionName() {
+        try {
+            return getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (Throwable t) {
+            Log.w(TAG, "cannot read own versionName", t);
+            return null;
+        }
     }
 
     /** 读 assets 里的小文本文件；不存在/读失败返回 null。 */
@@ -643,6 +724,10 @@ public class CnSetupActivity extends Activity {
             // 为什么要清：数据包的主表数量会变（v1.3 84 张 → v1.4 70 张）。只覆盖不删除时，
             // 被上游砍掉的 14 张旧表会留在 cache 里，游戏用新代码读旧结构 → 商店面板空引用黑屏。
             // 只删「上次安装自己写过的」（清单里的），游戏自己下载的表一律不碰。
+            //
+            // 兜底：旧版安装器（v1.3/ci1）当时还没有 installed.list，无法用清单做差集。
+            // 这里再用内置的 legacy 清单清一次：只删「旧版写过、本版数据包不含」的主表。
+            final int prunedLegacy = pruneLegacyMasters(cacheDir, nowMaster);
             final int prunedMaster = pruneStale(new File(cnDir, LIST_MASTER), nowMaster,
                     new Pruner() {
                         @Override
@@ -686,7 +771,8 @@ public class CnSetupActivity extends Activity {
             sElapsedMs = SystemClock.elapsedRealtime() - sStartElapsed;
             diag("extract done: entries=" + entries + " seen=" + seen + " master=" + masterFiles
                     + " bundles=" + bundleFiles + " cacheInfo=" + cacheInfoFiles
-                    + " packagedInfo=" + packagedInfo + " prunedMaster=" + prunedMaster
+                    + " packagedInfo=" + packagedInfo + " prunedLegacy=" + prunedLegacy
+                    + " prunedMaster=" + prunedMaster
                     + " prunedBundles=" + prunedBundles + " bytes=" + bytes
                     + " elapsedMs=" + sElapsedMs + " version=" + version);
             ok = true;
@@ -774,6 +860,40 @@ public class CnSetupActivity extends Activity {
                 // 删不掉不算失败：留着最多是旧数据，比中断安装好。
                 Log.w(TAG, "prune failed: " + name + " / " + t);
             }
+        }
+        return removed;
+    }
+
+    /**
+     * 兜底：清掉旧版安装器（v1.3 / ci1）写过、但本版数据包已不再包含的主表。
+     *
+     * <p>旧版安装器没有 {@code installed.list}，升级时没法用清单做差集，而 1.57 时代写下的
+     * 84 张旧表在 1.58 客户端上会被新代码按新结构读取 → 商店面板空引用黑屏
+     * （见 docs/TROUBLESHOOT-shop-black-screen.md）。这里只删名字出现在内置 legacy 清单里的
+     * 文件；游戏自己下载的表不在清单里，绝不碰。</p>
+     *
+     * @return 实际删除的文件数
+     */
+    private int pruneLegacyMasters(File cacheDir, Set<String> nowMaster) {
+        if (legacyNames == null || legacyNames.isEmpty()) {
+            return 0;
+        }
+        int removed = 0;
+        for (String name : legacyNames) {
+            if (name == null || name.length() == 0 || nowMaster.contains(name)) {
+                continue;
+            }
+            try {
+                if (deleteIfFile(new File(cacheDir, name))) {
+                    removed++;
+                    Log.i(TAG, "pruned legacy entry: " + name);
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "prune legacy failed: " + name + " / " + t);
+            }
+        }
+        if (removed > 0) {
+            diag("pruned legacy master entries: " + removed);
         }
         return removed;
     }
@@ -996,6 +1116,20 @@ public class CnSetupActivity extends Activity {
         });
         addRow(retryButton, LinearLayout.LayoutParams.WRAP_CONTENT, dp(14));
 
+        // 兜底：解包失败时允许跳过汉化直接进游戏（写 skip_extract 钩子，重启后也不会再自动解包；
+        // 之后点悬浮窗「缓存修复」会清掉钩子并重新安装）。
+        skipButton = new Button(this);
+        skipButton.setText("跳过汉化，直接启动游戏");
+        skipButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13.0f);
+        skipButton.setVisibility(View.GONE);
+        skipButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSkipClicked();
+            }
+        });
+        addRow(skipButton, LinearLayout.LayoutParams.WRAP_CONTENT, dp(8));
+
         setContentView(root);
     }
 
@@ -1039,9 +1173,42 @@ public class CnSetupActivity extends Activity {
         }
     }
 
+    /**
+     * 兜底：解包失败时跳过汉化、直接启动游戏。
+     *
+     * <p>写一个内部的 {@code skip_extract} 调试钩子，之后每次启动都直接拉起游戏（不再解包），
+     * 保证「装不上也能玩官方版」；之后点悬浮窗「缓存修复」会清掉钩子并重新安装。</p>
+     */
+    private void onSkipClicked() {
+        try {
+            File cnDir = new File(getFilesDir(), DIR_TLW);
+            ensureDir(cnDir);
+            File hook = new File(cnDir, HOOK_SKIP);
+            FileOutputStream fos = new FileOutputStream(hook, false);
+            try {
+                fos.write("1\n".getBytes("UTF-8"));
+                fos.flush();
+            } finally {
+                closeQuietly(fos);
+            }
+            diag("skip clicked: skip_extract hook written, launching game");
+        } catch (Throwable t) {
+            Log.w(TAG, "cannot write skip_extract hook", t);
+        }
+        hideError();
+        synchronized (SESSION_LOCK) {
+            sFailed = false;
+            sSucceeded = false;
+        }
+        launchGame();
+    }
+
     private void hideError() {
         errorView.setVisibility(View.GONE);
         retryButton.setVisibility(View.GONE);
+        if (skipButton != null) {
+            skipButton.setVisibility(View.GONE);
+        }
     }
 
     private void startTicker() {
@@ -1176,6 +1343,10 @@ public class CnSetupActivity extends Activity {
         errorView.setVisibility(View.VISIBLE);
         retryButton.setText(retryLaunchOnly ? "重试启动" : "重试");
         retryButton.setVisibility(View.VISIBLE);
+        if (skipButton != null) {
+            // 兜底入口：实在装不上也要能进游戏（写 skip_extract，之后启动不再自动解包）。
+            skipButton.setVisibility(View.VISIBLE);
+        }
         detailView.setText(String.format(Locale.US, "已写入 %d / %d 个文件（%s）",
                 sEntryCount, EXPECTED_ENTRIES, formatSize(sByteCount)));
         hintView.setText("可以清理存储空间/确认存储可用后点「重试」。\n重新安装会覆盖已写入的文件，可安全重跑。");
