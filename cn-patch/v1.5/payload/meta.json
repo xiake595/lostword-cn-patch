@@ -1,0 +1,15 @@
+{
+ "name": "Touhou LostWord GL 简体中文补丁",
+ "version": "1.5",
+ "game_version": "1.58.0",
+ "package": "jp.goodsmile.touhoulostwordglobal_android",
+ "bundles": 431,
+ "masters": 79,
+ "story": 271,
+ "excluded": [
+  {
+   "hash": "4c6c82a379efc3a6900021cb359ab194",
+   "reason": "UnitMaster — 补丁版会让「伙伴」界面黑屏，已回滚"
+  }
+ ]
+}
