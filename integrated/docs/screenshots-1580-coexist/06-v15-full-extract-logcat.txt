@@ -1,0 +1,12 @@
+--------- beginning of main
+11-14 17:37:46.615 32028 32028 I TlwCn   : debug hook (external): /storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_andr0id/files/tlw_cn/no_autolaunch
+11-14 17:37:46.616 32028 32028 I TlwCn   : onCreate filesDir=/data/user/0/jp.goodsmile.touhoulostwordglobal_andr0id/files extRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_andr0id/files skipExtract=false noAutolaunch=true
+11-14 17:37:46.619 32028 32028 I TlwCn   : probeAsset: zipPresent=true version=v1.5-20261114+ci2 game=1.58.0 legacy=5
+11-14 17:37:46.619 32028 32028 I TlwCn   : debug hook (external): /storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_andr0id/files/tlw_cn/diag_dump
+11-14 17:37:46.667 32028 32028 I TlwCn   : diag dump written: /storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_andr0id/files/tlw_cn/diag-cache.txt
+11-14 17:37:46.682 32028 32028 I TlwCn   : extract start: filesDir=/data/user/0/jp.goodsmile.touhoulostwordglobal_andr0id/files extRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_andr0id/files
+11-14 17:37:46.684 32028  6384 I TlwCn   : targets: cache=/data/user/0/jp.goodsmile.touhoulostwordglobal_andr0id/files/cache bundleRoot=/storage/emulated/0/Android/data/jp.goodsmile.touhoulostwordglobal_andr0id/files/UnityCache/Shared
+11-14 17:37:46.684 32028  6384 I TlwCn   : data pack version.txt = [v1.5-20261114]
+11-14 17:38:01.986 32028  6384 I TlwCn   : marker written: /data/user/0/jp.goodsmile.touhoulostwordglobal_andr0id/files/tlw_cn/installed.txt = v1.5-20261114+ci2
+11-14 17:38:01.987 32028  6384 I TlwCn   : extract done: entries=782 seen=782 master=79 bundles=702 cacheInfo=702 packagedInfo=0 prunedLegacy=0 prunedMaster=0 prunedBundles=0 bytes=778825092 elapsedMs=15305 version=v1.5-20261114+ci2
+11-14 17:38:02.074 32028 32028 I TlwCn   : no_autolaunch hook: stay on done screen

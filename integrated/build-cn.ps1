@@ -2,7 +2,7 @@
 #
 # Content of the ONE apk:
 #   * FPS unlock overlay          (src\tlw\fps, ContentProvider boot)
-#   * CN localization data v1.4   (assets\lwlocal.zip -> unpacked on first run
+#   * CN localization data v1.5   (assets\lwlocal.zip -> unpacked on first run
 #                                  by tlw.cn.CnSetupActivity; baseline 1.58.0 / 7016)
 #   * 兜底：安装器旧表清理 / 版本校验，悬浮窗「还原官方缓存」与「缓存修复」
 #
@@ -30,7 +30,7 @@ param(
     [string]$OldActivity  = "com.google.firebase.MessagingUnityPlayerActivity",
     [string]$SetupActivity = "tlw.cn.CnSetupActivity",
     [string]$Authority    = "tlw.fps.cn",
-    [string]$CnVersion    = "v1.4-20261110b+ci3",
+    [string]$CnVersion    = "v1.5-20261114+ci2",
     [string]$GameVersion  = "1.58.0",
     [string]$LegacyList   = "assets\tlw_cn_legacy.txt",
     # coexist / 共存版：等长改包名（resources.arsc 只做等长字节替换，不重编码）

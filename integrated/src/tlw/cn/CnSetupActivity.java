@@ -34,9 +34,11 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -44,8 +46,8 @@ import java.util.zip.ZipInputStream;
 /**
  * 东方归言录（国际服 1.57.0 重打包版）首启汉化资源安装器。
  *
- * <p><b>为什么需要它</b>：汉化补丁（GitHub xiake595/lostword-cn-patch，lwlocal.zip，约 418 MB /
- * 761 个条目）必须出现在游戏自己的数据目录里，游戏才不会去下载国际服原始资源。原来的做法是用
+ * <p><b>为什么需要它</b>：汉化补丁（GitHub xiake595/lostword-cn-patch，lwlocal.zip，约 647 MB /
+ * 511 个条目）必须出现在游戏自己的数据目录里，游戏才不会去下载国际服原始资源。原来的做法是用
  * root 版 apply.sh 或 LSPatch 模块在首次启动前把文件 push 进去；本集成 APK 把整包以
  * assets/lwlocal.zip 内置，由本 Activity 在游戏进程内、Unity 启动之前完成解包，因此不需要
  * root，也不需要游戏先联网。</p>
@@ -59,7 +61,7 @@ import java.util.zip.ZipInputStream;
  *   lwlocal/version.txt                 -&gt; 内容作为版本标记写进 getFilesDir()/tlw_cn/installed.txt
  *   lwlocal/master/manifest.json        -&gt; getFilesDir()/cache/manifest.json（补丁自身的构建报告；
  *                                          v1.0 apply.sh 与 LwLocal v1.3 都按「master/ 下任意不带 /
- *                                          的条目」原样写入 cache，v1.4 验收时应有 70 张表）
+ *                                          的条目」原样写入 cache，v1.5 验收时应有 79 张表）
  * </pre>
  * 只有 __data，没有 __info；不做 CRC 之外的校验；不删除旧文件（按 hash 命名的旧缓存无害）。</p>
  *
@@ -103,13 +105,14 @@ public class CnSetupActivity extends Activity {
     /**
      * zip 条目总数 / 解压后总字节数（来自数据包统计，仅用于进度百分比与文案兜底）。
      *
-     * <p>v1.4 数据包：761 个条目 = 345 个 {@code __data} + 345 个 {@code __info}
-     * + 70 张主表 + {@code lwlocal/version.txt}，未压缩合计 438,036,025 B。
+     * <p>v1.5 数据包（汉化 v1.5 / 2026-11-14）：782 个条目 = 702 个 {@code __data}（431 资源包 + 271 剧情包）
+     * + 79 张主表 + {@code lwlocal/version.txt}，未压缩合计 778,825,092 B（约 743 MiB）。
+     * v1.5 不含 {@code __info}，由安装器按 {@code __data} 的真实 mtime 生成。
      * 这个数字只用于「进度条上限」和「条目被截断」的兜底判断，
      * 真正的完整性以解包结果（entries &gt; 0 且每个条目都写成功）为准。</p>
      */
-    private static final int EXPECTED_ENTRIES = 761;
-    private static final long EXPECTED_BYTES = 438036025L;
+    private static final int EXPECTED_ENTRIES = 782;
+    private static final long EXPECTED_BYTES = 778825092L;
 
     /** 1 MiB 读写缓冲（需求指定）。 */
     private static final int BUFFER_SIZE = 1024 * 1024;
@@ -120,6 +123,8 @@ public class CnSetupActivity extends Activity {
     private static final String MARKER_NAME = "installed.txt";
     private static final String HOOK_SKIP = "skip_extract";
     private static final String HOOK_NO_AUTO = "no_autolaunch";
+    /** 诊断钩子：存在时把内部 files/、files/cache/ 的文件名/大小/时间写到外部 tlw_cn/diag-cache.txt。 */
+    private static final String HOOK_DIAG = "diag_dump";
 
     /**
      * 「还原官方」模式标记（由 {@link CacheRestore} 写入、{@link CacheRepair} 清除）。
@@ -133,13 +138,13 @@ public class CnSetupActivity extends Activity {
     /** 构建时写入的「适配游戏版本」（build-cn.ps1 的 -GameVersion）。版本不符时拒绝解包，避免黑屏。 */
     private static final String ASSET_GAME = "tlw_cn.game";
 
-    /** 旧版安装器（v1.3 / ci1，当时没有 installed.list）写过、v1.4 起不再包含的主表文件名清单。 */
+    /** 旧版安装器写过、v1.5 已不再包含的主表清单（每行 name&lt;TAB&gt;size，只删大小仍与旧版一致的文件）。 */
     private static final String ASSET_LEGACY = "tlw_cn_legacy.txt";
 
     /**
      * 上一次安装写进 {@code files/cache} 的主表清单（一行一个文件名）。
      *
-     * <p>存在的意义：数据包的 master 数量是会变的（v1.3 是 84 张，v1.4 砍到 70 张）。
+     * <p>存在的意义：数据包的 master 数量是会变的（v1.3 84 张 → v1.4 70 张 → v1.5 79 张）。
      * 安装器只覆盖不删除的话，被砍掉的那批旧表会一直留在 cache 里，游戏用新版本代码去读
      * 旧结构的数据 → 典型表现就是商店面板 {@code ShopCategoryToggle.UpdateToggle()}
      * 抛 NullReferenceException、整个面板黑屏（2026-11-10 实测，见
@@ -195,8 +200,8 @@ public class CnSetupActivity extends Activity {
     private boolean retryLaunchOnly;
     /** 构建时写入的适配游戏版本（assets/tlw_cn.game），可能为 null（旧包没带）。 */
     private String probeGame;
-    /** 旧版安装器写过、本版数据包已不再包含的主表文件名（assets/tlw_cn_legacy.txt）。 */
-    private List<String> legacyNames;
+    /** 旧版安装器写过、本版数据包已不再包含的主表文件名 → 旧版文件大小（只删大小仍一致的文件）。 */
+    private Map<String, Long> legacySizes;
     private volatile File diagLogFile;
 
     /** zip 是否存在（getAssets().open 成功过）与快速探测到的 version.txt 内容。 */
@@ -239,6 +244,12 @@ public class CnSetupActivity extends Activity {
         final boolean hasMarker = installedVersion != null && installedVersion.length() > 0;
         probeAsset();
         final String zipVersion = probeVersion;
+
+        // 诊断钩子（可选，手动创建外部 tlw_cn/diag_dump 才生效）：导出内部缓存清单，
+        // 用于排查游戏更新后哪些主表被官方版本覆盖。
+        if (hasHook(cnDir, extRoot, HOOK_DIAG)) {
+            dumpInternalDiag(filesDir, extRoot);
+        }
 
         // 兜底 0：「还原官方」模式。CacheRestore 会删掉汉化数据并写下这个标记，
         // 这里跳过解包直接启动游戏，让游戏重新下载官方主表/资源包。
@@ -392,14 +403,17 @@ public class CnSetupActivity extends Activity {
             probeVersion = releaseVersion;
         }
         probeGame = readAssetText(ASSET_GAME, 64);
-        legacyNames = readLegacyList();
+        legacySizes = readLegacyList();
         diag("probeAsset: zipPresent=" + zipPresent + " version=" + probeVersion
-                + " game=" + probeGame + " legacy=" + (legacyNames == null ? 0 : legacyNames.size()));
+                + " game=" + probeGame + " legacy=" + (legacySizes == null ? 0 : legacySizes.size()));
     }
 
-    /** 读 assets/tlw_cn_legacy.txt（一行一个旧版主表文件名）；不存在/读失败返回空表。 */
-    private List<String> readLegacyList() {
-        List<String> out = new ArrayList<String>();
+    /**
+     * 读 assets/tlw_cn_legacy.txt（每行 {@code name<TAB>旧版大小}）；不存在/读失败返回空表。
+     * 只记录带合法大小的条目，用于「确认仍是旧版文件才删」的兜底清理。
+     */
+    private Map<String, Long> readLegacyList() {
+        Map<String, Long> out = new HashMap<String, Long>();
         InputStream in = null;
         BufferedReader reader = null;
         try {
@@ -408,8 +422,20 @@ public class CnSetupActivity extends Activity {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                if (line.length() > 0 && isSafeSegment(line)) {
-                    out.add(line);
+                if (line.length() == 0) {
+                    continue;
+                }
+                String[] parts = line.split("\t");
+                String name = parts[0].trim();
+                long size = -1L;
+                if (parts.length > 1) {
+                    try {
+                        size = Long.parseLong(parts[1].trim());
+                    } catch (Throwable ignored) {
+                    }
+                }
+                if (isSafeSegment(name) && size > 0) {
+                    out.put(name, Long.valueOf(size));
                 }
             }
         } catch (Throwable t) {
@@ -429,6 +455,69 @@ public class CnSetupActivity extends Activity {
             Log.w(TAG, "cannot read own versionName", t);
             return null;
         }
+    }
+
+    // ---------------------------------------------------------------------
+    // 诊断（只在外部钩子 tlw_cn/diag_dump 存在时运行，发布包保留不影响正常流程）
+    // ---------------------------------------------------------------------
+
+    /**
+     * 把内部 {@code files/}、{@code files/cache/}、{@code files/tlw_cn/} 的文件名、大小、mtime
+     * 写到外部 {@code tlw_cn/diag-cache.txt}，用于排查游戏版本更新后哪些主表被官方版本覆盖。
+     * 数据只落在本应用自己的外部目录，不包含文件内容。
+     */
+    private void dumpInternalDiag(File filesDir, File extRoot) {
+        StringBuilder sb = new StringBuilder(512 * 1024);
+        try {
+            sb.append("dump at ")
+              .append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date()))
+              .append('\n');
+            appendDirDump(sb, new File(filesDir, "cache"), "cache");
+            appendDirDump(sb, filesDir, "files");
+            appendDirDump(sb, new File(filesDir, DIR_TLW), "tlw_cn");
+        } catch (Throwable t) {
+            sb.append("dump failed: ").append(t).append('\n');
+        }
+        final File outDir = new File(extRoot, DIR_TLW);
+        final File out = new File(outDir, "diag-cache.txt");
+        FileOutputStream fos = null;
+        try {
+            ensureDir(outDir);
+            fos = new FileOutputStream(out, false);
+            fos.write(sb.toString().getBytes("UTF-8"));
+            fos.flush();
+            diag("diag dump written: " + out);
+        } catch (Throwable t) {
+            Log.w(TAG, "diag dump failed", t);
+        } finally {
+            closeQuietly(fos);
+        }
+    }
+
+    private static void appendDirDump(StringBuilder sb, File dir, String label) {
+        sb.append("==== ").append(label).append(' ').append(dir).append('\n');
+        File[] files = dir.listFiles();
+        if (files == null) {
+            sb.append("(unreadable)\n");
+            return;
+        }
+        List<String> lines = new ArrayList<String>(files.length);
+        long total = 0L;
+        int count = 0;
+        for (File f : files) {
+            final boolean isDir = f.isDirectory();
+            lines.add((isDir ? "D" : "F") + "\t" + f.length() + "\t" + (f.lastModified() / 1000L)
+                    + "\t" + f.getName());
+            if (!isDir) {
+                total += f.length();
+            }
+            count++;
+        }
+        java.util.Collections.sort(lines);
+        for (String line : lines) {
+            sb.append(line).append('\n');
+        }
+        sb.append("-- count=").append(count).append(" bytes=").append(total).append('\n');
     }
 
     /** 读 assets 里的小文本文件；不存在/读失败返回 null。 */
@@ -616,6 +705,9 @@ public class CnSetupActivity extends Activity {
             String version = null;
             // 本次数据包里实际存在的条目名（用于跟上次的清单做差集，删掉被上游砍掉的旧表/旧包）
             final Set<String> nowMaster = new HashSet<String>();
+            // 主表名 → 本次写入的字节数；下次升级只删「大小仍等于我们写过的那份」的旧表，
+            // 被游戏重新下载成官方版本（大小不同）的文件绝不删。
+            final Map<String, Long> nowMasterSizes = new HashMap<String, Long>();
             final Set<String> nowBundles = new HashSet<String>();
             try {
                 raw = getAssets().open(ASSET_ZIP);
@@ -642,7 +734,7 @@ public class CnSetupActivity extends Activity {
                             final String rest = name.substring(PREFIX_MASTER.length());
                             // 参考实现（v1.0 apply.sh 的 `cp master/* $CACHE/` 与 LwLocal v1.3 的 unzip()）都是：
                             // master/ 下任何「不带 / 的条目」原样写进 filesDir/cache/ —— 包括补丁自带的
-                            // manifest.json（补丁构建报告，非游戏数据）。v1.4 是 70 张表（任务/交换所暂不汉化）。
+                            // manifest.json（补丁构建报告，非游戏数据）。v1.5 是 79 张表（含任务与商店；UnitMaster 不包含）。
                             if (!isSafeSegment(rest)) {
                                 Log.w(TAG, "skip unsafe master entry: " + name);
                             } else {
@@ -651,6 +743,7 @@ public class CnSetupActivity extends Activity {
                                 entries++;
                                 masterFiles++;
                                 nowMaster.add(rest);
+                                nowMasterSizes.put(rest, Long.valueOf(n));
                             }
                         } else if (name.startsWith(PREFIX_BUNDLES)) {
                             final String rest = name.substring(PREFIX_BUNDLES.length());
@@ -664,7 +757,7 @@ public class CnSetupActivity extends Activity {
                                 // 只有 __data、没有 __info 的条目在游戏初始化缓存时会当作垃圾清掉
                                 // （实测：真机首启后 345 个预置包里 269 个被删、其余被重新下载的英文包覆盖）。
                                 //
-                                // v1.4 数据包自己也带了 __info（345 个），但里面的 mtime 是打包时的固定值，
+                                // v1.4 数据包曾自带 __info（345 个），其 mtime 是打包时固定值；v1.5 不带 __info，
                                 // 与刚写出的 __data 对不上；这里仍然由安装器按 __data 的真实 mtime 重新生成，
                                 // 数据包里的那份只当参考、不落盘（见下面的 __info 分支）。
                                 writeCacheInfo(dir, dest);
@@ -701,7 +794,7 @@ public class CnSetupActivity extends Activity {
             if (entries <= 0) {
                 throw new IOException("lwlocal.zip 中没有可安装的条目（资源包损坏？）");
             }
-            // 完整性检查：v1.4 数据包固定 761 个条目（345 __data + 345 __info + 70 主表 + version.txt）。
+            // 完整性检查：v1.5 数据包固定 782 个条目（431 资源包 + 271 剧情包 + 79 主表 + version.txt）。
             // 若 APK 重打包时 asset 被截断，ZipInputStream 读到条目边界会「正常」结束，必须靠条目数识别，
             // 否则会写入不完整的汉化数据 + marker，导致游戏缺资源去联网下载。
             if (seen < EXPECTED_ENTRIES) {
@@ -721,20 +814,15 @@ public class CnSetupActivity extends Activity {
             // 关键顺序：所有目标文件写完后，先清掉「上次写过、这次数据包里没有」的旧条目，
             // 再原子写 marker，之后才允许启动游戏。
             //
-            // 为什么要清：数据包的主表数量会变（v1.3 84 张 → v1.4 70 张）。只覆盖不删除时，
-            // 被上游砍掉的 14 张旧表会留在 cache 里，游戏用新代码读旧结构 → 商店面板空引用黑屏。
-            // 只删「上次安装自己写过的」（清单里的），游戏自己下载的表一律不碰。
-            //
-            // 兜底：旧版安装器（v1.3/ci1）当时还没有 installed.list，无法用清单做差集。
-            // 这里再用内置的 legacy 清单清一次：只删「旧版写过、本版数据包不含」的主表。
+            // 为什么只删自己写过的：数据包的主表数量会变（v1.3 84 张 → v1.4 70 张 → v1.5 79 张），
+            // 旧表留着会被新代码按新结构读取 → 商店面板空引用黑屏；但游戏自己重新下载的
+            // 官方版本绝不能删（否则会触发「缺文件 → 整包主数据重下 → 覆盖汉化」）。
+            // 所以：① 主表只删「上次清单里有、本次数据包没有、且大小仍等于当时写入值」的；
+            //       ② 旧版安装器（v1.3/ci1，没有 installed.list）的残留用内置 legacy 清单，
+            //          同样要求文件大小与旧版 CN 版本一致才删（官方重下的文件大小不同，保留）；
+            //       ③ UnitMaster 这类游戏自身文件不在清单里，永远不碰。
             final int prunedLegacy = pruneLegacyMasters(cacheDir, nowMaster);
-            final int prunedMaster = pruneStale(new File(cnDir, LIST_MASTER), nowMaster,
-                    new Pruner() {
-                        @Override
-                        public boolean remove(String name) {
-                            return deleteIfFile(new File(cacheDir, name));
-                        }
-                    });
+            final int prunedMaster = pruneStaleMaster(new File(cnDir, LIST_MASTER), cacheDir, nowMaster);
             final int prunedBundles = pruneStale(new File(cnDir, LIST_BUNDLE), nowBundles,
                     new Pruner() {
                         @Override
@@ -761,7 +849,7 @@ public class CnSetupActivity extends Activity {
             if (prunedMaster > 0 || prunedBundles > 0) {
                 diag("pruned stale entries: master=" + prunedMaster + " bundles=" + prunedBundles);
             }
-            writeNameList(new File(cnDir, LIST_MASTER), nowMaster);
+            writeMasterList(new File(cnDir, LIST_MASTER), nowMaster, nowMasterSizes);
             writeNameList(new File(cnDir, LIST_BUNDLE), nowBundles);
 
             writeMarkerAtomic(marker, version);
@@ -816,7 +904,7 @@ public class CnSetupActivity extends Activity {
     }
 
     /**
-     * 读掉一个条目但不落盘（v1.4 数据包里自带的 {@code __info} 用这个跳过）。
+     * 读掉一个条目但不落盘（数据包若自带 {@code __info} 用这个跳过；v1.5 不带）。
      *
      * <p>ZipInputStream 必须把当前条目的数据流读完才能走到下一个条目，
      * 所以不能直接 continue，得把字节读掉丢掉。</p>
@@ -868,23 +956,30 @@ public class CnSetupActivity extends Activity {
      * 兜底：清掉旧版安装器（v1.3 / ci1）写过、但本版数据包已不再包含的主表。
      *
      * <p>旧版安装器没有 {@code installed.list}，升级时没法用清单做差集，而 1.57 时代写下的
-     * 84 张旧表在 1.58 客户端上会被新代码按新结构读取 → 商店面板空引用黑屏
-     * （见 docs/TROUBLESHOOT-shop-black-screen.md）。这里只删名字出现在内置 legacy 清单里的
-     * 文件；游戏自己下载的表不在清单里，绝不碰。</p>
+     * 84 张旧表在 1.58 客户端上会被新代码按新结构读取 → 商店面板空引用黑屏。
+     * 但**不能盲删**：这些文件名也可能已经被游戏重新下载成官方 1.58 版本，删了会触发
+     * 「主数据缺文件 → 整包重下 → 覆盖汉化」。所以只有文件大小仍等于旧版 CN 版本大小时才删
+     * （清单每行 name&lt;TAB&gt;size）。{@code UnitMaster} 等游戏自身文件不在清单里，永远不碰。</p>
      *
      * @return 实际删除的文件数
      */
     private int pruneLegacyMasters(File cacheDir, Set<String> nowMaster) {
-        if (legacyNames == null || legacyNames.isEmpty()) {
+        if (legacySizes == null || legacySizes.isEmpty()) {
             return 0;
         }
         int removed = 0;
-        for (String name : legacyNames) {
+        for (Map.Entry<String, Long> e : legacySizes.entrySet()) {
+            final String name = e.getKey();
+            final long expected = e.getValue() == null ? -1L : e.getValue().longValue();
             if (name == null || name.length() == 0 || nowMaster.contains(name)) {
                 continue;
             }
+            final File f = new File(cacheDir, name);
             try {
-                if (deleteIfFile(new File(cacheDir, name))) {
+                if (expected <= 0L || !f.isFile() || f.length() != expected) {
+                    continue;       // 文件不在 / 已被游戏换成官方版本 → 保留
+                }
+                if (deleteIfFile(f)) {
                     removed++;
                     Log.i(TAG, "pruned legacy entry: " + name);
                 }
@@ -894,6 +989,53 @@ public class CnSetupActivity extends Activity {
         }
         if (removed > 0) {
             diag("pruned legacy master entries: " + removed);
+        }
+        return removed;
+    }
+
+    /**
+     * 按上次的主表清单清掉本次数据包里已不存在的主表。
+     *
+     * <p>清单格式 {@code name<TAB>写入时大小}；只有当前文件大小仍等于当时的写入值才删
+     * （证明它还是我们写的那份，而不是游戏后来下载的官方版本）。旧格式（只有名字）不删，
+     * 宁可留旧文件也不触发主数据整包重下。</p>
+     *
+     * @return 实际删除的文件数
+     */
+    private static int pruneStaleMaster(File listFile, File cacheDir, Set<String> nowPresent) {
+        List<String> old = readNameList(listFile);
+        if (old.isEmpty()) {
+            return 0;
+        }
+        int removed = 0;
+        for (String line : old) {
+            if (line == null || line.length() == 0) {
+                continue;
+            }
+            String[] parts = line.split("\t");
+            final String name = parts[0].trim();
+            long recorded = -1L;
+            if (parts.length > 1) {
+                try {
+                    recorded = Long.parseLong(parts[1].trim());
+                } catch (Throwable ignored) {
+                }
+            }
+            if (name.length() == 0 || nowPresent.contains(name)) {
+                continue;
+            }
+            final File f = new File(cacheDir, name);
+            try {
+                if (recorded <= 0L || !f.isFile() || f.length() != recorded) {
+                    continue;
+                }
+                if (deleteIfFile(f)) {
+                    removed++;
+                    Log.i(TAG, "pruned stale master: " + name + " (" + recorded + " bytes)");
+                }
+            } catch (Throwable t) {
+                Log.w(TAG, "prune master failed: " + name + " / " + t);
+            }
         }
         return removed;
     }
@@ -953,6 +1095,46 @@ public class CnSetupActivity extends Activity {
             }
         } catch (Throwable t) {
             Log.w(TAG, "write list " + f + " failed: " + t);
+        } finally {
+            closeQuietly(fos);
+        }
+    }
+
+    /**
+     * 原子写主表清单（每行 {@code name<TAB>本次写入大小}）；失败只记日志，不影响安装结果。
+     * 记录大小是为了下次只删「确实还是我们写的那份」的旧表。
+     */
+    private static void writeMasterList(File f, Set<String> names, Map<String, Long> sizes) {
+        if (f == null) {
+            return;
+        }
+        File tmp = new File(f.getParentFile(), f.getName() + ".tmp");
+        FileOutputStream fos = null;
+        try {
+            StringBuilder sb = new StringBuilder(names.size() * 48);
+            for (String n : names) {
+                Long size = (sizes == null) ? null : sizes.get(n);
+                sb.append(n).append('\t').append(size == null ? -1L : size.longValue()).append('\n');
+            }
+            fos = new FileOutputStream(tmp, false);
+            fos.write(sb.toString().getBytes("UTF-8"));
+            fos.flush();
+            try {
+                fos.getFD().sync();
+            } catch (Throwable ignored) {
+            }
+            closeQuietly(fos);
+            fos = null;
+            if (!tmp.renameTo(f)) {
+                if (f.isFile()) {
+                    f.delete();
+                }
+                if (!tmp.renameTo(f)) {
+                    Log.w(TAG, "cannot write master list " + f);
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "write master list " + f + " failed: " + t);
         } finally {
             closeQuietly(fos);
         }
@@ -1054,7 +1236,7 @@ public class CnSetupActivity extends Activity {
         addRow(titleView, LinearLayout.LayoutParams.WRAP_CONTENT, 0);
 
         statusView = new TextView(this);
-        statusView.setText("首次启动正在安装汉化资源（约 418 MB），请勿退出…");
+        statusView.setText("首次启动正在安装汉化资源（约 743 MB），请勿退出…");
         statusView.setTextColor(COLOR_SUB);
         statusView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15.0f);
         statusView.setGravity(Gravity.CENTER);
@@ -1160,7 +1342,7 @@ public class CnSetupActivity extends Activity {
         progressBar.setProgress(0);
         percentView.setText("0%");
         detailView.setText("文件 0 / " + EXPECTED_ENTRIES + " · 0.0 MB / 约 " + (EXPECTED_BYTES >> 20) + " MB");
-        statusView.setText("首次启动正在安装汉化资源（约 418 MB），请勿退出…");
+        statusView.setText("首次启动正在安装汉化资源（约 743 MB），请勿退出…");
         hintView.setText("首次安装约需 1~3 分钟，完成后会自动进入游戏。\n安装过程中请勿退出应用。");
         synchronized (SESSION_LOCK) {
             sFailed = false;
